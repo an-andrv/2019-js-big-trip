@@ -1,7 +1,7 @@
 # Личный проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Анастасия Андреева](https://up.htmlacademy.ru/ecmascript/8/user/506177).
-* Наставник: `Неизвестно`.
+* Наставник: [Евгений Сальников] (https://htmlacademy.ru/profile/id24537).
 
 ---
 
