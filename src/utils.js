@@ -4,8 +4,8 @@ export const getRandomNumber = (min, max) => {
 
 export const getFormatDate = (date) => {
   const dateOptions = {
-    month: 'short',
-    day: 'numeric',
+    month: `short`,
+    day: `numeric`,
   };
 
   return date.toLocaleDateString(`en-US`, dateOptions);
@@ -32,7 +32,7 @@ export const getFormatTimeDifference = (firstDate, secondDate) => {
   const dateDifference = secondDate - firstDate;
 
   const hours = Math.floor(dateDifference / hourMilliseconds);
-  const minutes = Math.floor((dateDifference / minuteMilliseconds) - hours * MINUTES_IN_HOUR );
+  const minutes = Math.floor((dateDifference / minuteMilliseconds) - hours * MINUTES_IN_HOUR);
 
   return hours + `h ` + minutes + `m`;
 };

@@ -19,7 +19,7 @@ const renderEvents = (dist, count) => {
   const dayData = makeDayData(count);
   const events = [];
 
-  dayData.data.forEach(event => {
+  dayData.data.forEach((event) => {
     events.push(makeEvent(event));
   });
 

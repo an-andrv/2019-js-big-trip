@@ -53,15 +53,15 @@ const eventsData = new Map([ // for..of
       `Switch to comfort class`,
       `Choose seats`,
     ],
-  }], 
+  }],
   [`Train`, {
     icon: `🚂`,
     title: `Train to`,
     destination: cities,
     offers: [
-      `Add luggage`, 
-      `Switch to comfort class`, 
-      `Add meal`, 
+      `Add luggage`,
+      `Switch to comfort class`,
+      `Add meal`,
       `Choose seats`,
     ],
   }],
@@ -74,7 +74,7 @@ const eventsData = new Map([ // for..of
       `Switch to comfort class`,
       `Choose seats`,
     ],
-  }], 
+  }],
   [`Transport`, {
     icon: `🚊`,
     title: `Other transport to`,
@@ -84,7 +84,7 @@ const eventsData = new Map([ // for..of
       `Switch to comfort class`,
       `Choose seats`,
     ],
-  }], 
+  }],
   [`Drive`, {
     icon: `🚗`,
     title: `Drive to`,
@@ -94,7 +94,7 @@ const eventsData = new Map([ // for..of
       `Switch to comfort class`,
       `Choose seats`,
     ],
-  }], 
+  }],
   [`Flight`, {
     icon: `✈️`,
     title: `Flight to`,
@@ -114,7 +114,7 @@ const eventsData = new Map([ // for..of
       `Early check-in`,
       `Wi-fi`,
     ],
-  }], 
+  }],
   [`Sightseeing`, {
     icon: `🏛️`,
     title: `Sightseeing to`,
@@ -124,7 +124,7 @@ const eventsData = new Map([ // for..of
       `Add a meal`,
       `Wi-fi`,
     ],
-  }], 
+  }],
   [`Restaurant`, {
     icon: `🍴`,
     title: `Eat in`,
@@ -176,7 +176,7 @@ const makeUniqueArray = (count, source) => {
     collection.add(source[getRandomNumber(0, source.length - 1)]);
   }
   const array = [];
-  collection.forEach(element => array.push(element));
+  collection.forEach((element) => array.push(element));
 
   return array;
 };
@@ -213,7 +213,7 @@ export const makeDayData = (count) => {
 
   const dayData = {
     date: getFormatDate(date),
-    data: new Array(count).fill().map(_ => makeEventData(date))
+    data: new Array(count).fill().map(() => makeEventData(date))
   };
 
   return dayData;

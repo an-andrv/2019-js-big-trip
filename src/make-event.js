@@ -1,7 +1,7 @@
 export default (eventData) => {
 
   const offersTemplate = [];
-  eventData.offers.forEach(offer => {
+  eventData.offers.forEach((offer) => {
     offersTemplate.push(`
       <li>
         <button class="trip-point__offer">${offer} +&euro;&nbsp;20</button>
@@ -23,4 +23,4 @@ export default (eventData) => {
       </ul>
     </article>
   `;
-}
+};
