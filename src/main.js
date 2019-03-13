@@ -1,6 +1,8 @@
 import makeFilter from './make-filter';
 import makeEvent from './make-event';
+import makeDayEvents from './make-day-events';
 import {getRandomNumber} from './utils';
+import {makeDayData} from './mock';
 
 const filterNames = [`everything`, `future`, `past`];
 const filtersSection = document.querySelector(`.trip-filter`);
@@ -9,17 +11,23 @@ filterNames.forEach((name) => {
   filtersSection.insertAdjacentHTML(`beforeend`, makeFilter(name));
 });
 
-let eventsCount = 7;
-const eventsContainer = document.querySelector(`.trip-day__items`);
+const FIRST_LOAD_EVENTS_COUNT = 7;
+const eventsContainer = document.querySelector(`.trip-points`);
 
 const renderEvents = (dist, count) => {
-  const events = new Array(count)
-    .fill()
-    .map(makeEvent);
-  dist.insertAdjacentHTML(`beforeend`, events.join(``));
+
+  const dayData = makeDayData(count);
+  const events = [];
+
+  dayData.data.forEach((event) => {
+    events.push(makeEvent(event));
+  });
+
+  const dayEvents = makeDayEvents(dayData.date, events);
+  dist.insertAdjacentHTML(`beforeend`, dayEvents);
 };
 
-renderEvents(eventsContainer, eventsCount);
+renderEvents(eventsContainer, FIRST_LOAD_EVENTS_COUNT);
 
 const filterLabels = document.querySelectorAll(`.trip-filter__item`);
 
@@ -28,7 +36,7 @@ const filterLabels = document.querySelectorAll(`.trip-filter__item`);
 
     eventsContainer.innerHTML = ``;
 
-    eventsCount = getRandomNumber(1, 10);
-    renderEvents(eventsContainer, eventsCount);
+    const randomEventsCount = getRandomNumber(1, 10);
+    renderEvents(eventsContainer, randomEventsCount);
   });
 });
