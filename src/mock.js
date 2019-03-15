@@ -195,7 +195,7 @@ const makeEventData = (date) => {
       title: eventDataChoosen.title,
       location: eventDataChoosen.destination[getRandomNumber(0, eventDataChoosen.destination.length - 1)],
     },
-    pictureAddress: chooseSights(),
+    picture: chooseSights(),
     description: makeUniqueArray(getRandomNumber(MIN_DESCRIPTION_COUNT, MAX_DESCRIPTION_COUNT), descriptions).join(` `),
     time: {
       from: getFormatTime(firstDate),
