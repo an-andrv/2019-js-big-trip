@@ -1,15 +1,25 @@
-import makeFilter from './make-filter';
 import {getRandomNumber} from './utils';
 import {makeDayData} from './mock';
 import {Event} from './event';
 import {EventEdit} from './event-edit';
 import {TripDay} from './trip-day';
+import {Filter} from './filter';
 
 const filterNames = [`everything`, `future`, `past`];
 const filtersSection = document.querySelector(`.trip-filter`);
 
 filterNames.forEach((name) => {
-  filtersSection.insertAdjacentHTML(`beforeend`, makeFilter(name));
+
+  const filterComponent = new Filter(name);
+  filtersSection.appendChild(filterComponent.render());
+
+  filterComponent.onChangeCount = () => {
+    eventsContainer.innerHTML = ``;
+
+    const randomEventsCount = getRandomNumber(1, 10);
+    renderEvents(eventsContainer, randomEventsCount);
+  }
+  
 });
 
 const FIRST_LOAD_EVENTS_COUNT = 7;
@@ -46,15 +56,3 @@ const renderEvents = (dist, count) => {
 };
 
 renderEvents(eventsContainer, FIRST_LOAD_EVENTS_COUNT);
-
-const filterLabels = document.querySelectorAll(`.trip-filter__item`);
-
-[].forEach.call(filterLabels, (label) => {
-  label.addEventListener(`click`, () => {
-
-    eventsContainer.innerHTML = ``;
-
-    const randomEventsCount = getRandomNumber(1, 10);
-    renderEvents(eventsContainer, randomEventsCount);
-  });
-});
