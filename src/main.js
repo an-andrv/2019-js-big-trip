@@ -18,8 +18,8 @@ filterNames.forEach((name) => {
 
     const randomEventsCount = getRandomNumber(1, 10);
     renderEvents(eventsContainer, randomEventsCount);
-  }
-  
+  };
+
 });
 
 const FIRST_LOAD_EVENTS_COUNT = 7;
