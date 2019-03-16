@@ -5,8 +5,6 @@ export class Event {
     this._icon = data.event.icon;
     this._title = data.event.title;
     this._location = data.event.location;
-    this._picture = data.event.picture;
-    this._description = data.description;
     this._time = data.time;
     this._price = data.price;
     this._offers = data.offers;
@@ -16,6 +14,7 @@ export class Event {
       // Состояние компонента
     };
     this._onEdit = null;
+    this._onEditButtonClick = this._onEditButtonClick.bind(this);
   }
 
   _onEditButtonClick() {
@@ -62,7 +61,7 @@ export class Event {
 
   bind() {
     this._element.querySelector(`.trip-icon`)
-      .addEventListener(`click`, this._onEditButtonClick.bind(this));
+      .addEventListener(`click`, this._onEditButtonClick);
   }
 
   render() {
@@ -72,7 +71,8 @@ export class Event {
   }
 
   unbind() {
-    this._onEdit = null;
+    this._element.querySelector(`.trip-icon`)
+      .removeEventListener(`click`, this._onEditButtonClick);
   }
 
   unrender() {

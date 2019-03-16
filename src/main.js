@@ -5,8 +5,13 @@ import {EventEdit} from './event-edit';
 import {TripDay} from './trip-day';
 import {Filter} from './filter';
 
+const FIRST_LOAD_EVENTS_COUNT = 7;
+
 const filterNames = [`everything`, `future`, `past`];
 const filtersSection = document.querySelector(`.trip-filter`);
+
+const tripDayInfoContainer = document.querySelector(`.trip-day__info`);
+const eventsContainer = document.querySelector(`.trip-day__items`);
 
 filterNames.forEach((name) => {
 
@@ -15,6 +20,7 @@ filterNames.forEach((name) => {
 
   filterComponent.onChangeCount = () => {
     eventsContainer.innerHTML = ``;
+    tripDayInfoContainer.innerHTML = ``;
 
     const randomEventsCount = getRandomNumber(1, 10);
     renderEvents(eventsContainer, randomEventsCount);
@@ -22,9 +28,6 @@ filterNames.forEach((name) => {
 
 });
 
-const FIRST_LOAD_EVENTS_COUNT = 7;
-const eventsContainer = document.querySelector(`.trip-day__items`);
-const tripDayContainer = document.querySelector(`.trip-day`);
 
 const renderEvents = (dist, count) => {
 
@@ -49,10 +52,16 @@ const renderEvents = (dist, count) => {
       dist.replaceChild(eventComponent.element, editEventComponent.element);
       editEventComponent.unrender();
     };
+
+    editEventComponent.onReset = () => {
+      eventComponent.render();
+      dist.replaceChild(eventComponent.element, editEventComponent.element);
+      editEventComponent.unrender();
+    };
   });
 
   const tripDayComponent = new TripDay(date);
-  tripDayContainer.insertBefore(tripDayComponent.render(), dist);
+  tripDayInfoContainer.appendChild(tripDayComponent.render());
 };
 
 renderEvents(eventsContainer, FIRST_LOAD_EVENTS_COUNT);

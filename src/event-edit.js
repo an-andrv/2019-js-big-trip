@@ -6,7 +6,7 @@ export class EventEdit {
     this._icon = data.event.icon;
     this._title = data.event.title;
     this._location = data.event.location;
-    this._picture = data.event.picture;
+    this._picture = data.picture;
     this._description = data.description;
     this._time = data.time;
     this._price = data.price;
@@ -14,11 +14,19 @@ export class EventEdit {
 
     this._element = null;
     this._onSubmit = null;
+    this._onReset = null;
+    this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
+    this._onResetButtonClick = this._onResetButtonClick.bind(this);
   }
 
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
     return typeof this._onSubmit === `function` && this._onSubmit();
+  }
+
+  _onResetButtonClick(evt) {
+    evt.preventDefault();
+    return typeof this._onReset === `function` && this._onReset();
   }
 
   get element() {
@@ -27,6 +35,10 @@ export class EventEdit {
 
   set onSubmit(value) {
     this._onSubmit = value;
+  }
+
+  set onReset(value) {
+    this._onReset = value;
   }
 
   makeOffers(offersData) {
@@ -141,8 +153,10 @@ export class EventEdit {
   }
 
   bind() {
-    this._element.querySelector(`.point__button--save`)
-      .addEventListener(`click`, this._onSubmitButtonClick.bind(this));
+    this._element.querySelector(`form`)
+      .addEventListener(`submit`, this._onSubmitButtonClick);
+    this._element.querySelector(`form`)
+      .addEventListener(`reset`, this._onResetButtonClick);
   }
 
   render() {
@@ -152,7 +166,10 @@ export class EventEdit {
   }
 
   unbind() {
-    this._onEdit = null;
+    this._element.querySelector(`form`)
+      .removeEventListener(`submit`, this._onSubmitButtonClick);
+    this._element.querySelector(`form`)
+      .removeEventListener(`reset`, this._onResetButtonClick);
   }
 
   unrender() {
