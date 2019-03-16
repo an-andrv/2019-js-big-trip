@@ -1,42 +1,67 @@
-import makeFilter from './make-filter';
-import makeEvent from './make-event';
-import makeDayEvents from './make-day-events';
 import {getRandomNumber} from './utils';
 import {makeDayData} from './mock';
+import {Event} from './event';
+import {EventEdit} from './event-edit';
+import {TripDay} from './trip-day';
+import {Filter} from './filter';
+
+const FIRST_LOAD_EVENTS_COUNT = 7;
 
 const filterNames = [`everything`, `future`, `past`];
 const filtersSection = document.querySelector(`.trip-filter`);
 
+const tripDayInfoContainer = document.querySelector(`.trip-day__info`);
+const eventsContainer = document.querySelector(`.trip-day__items`);
+
 filterNames.forEach((name) => {
-  filtersSection.insertAdjacentHTML(`beforeend`, makeFilter(name));
+
+  const filterComponent = new Filter(name);
+  filtersSection.appendChild(filterComponent.render());
+
+  filterComponent.onChangeCount = () => {
+    eventsContainer.innerHTML = ``;
+    tripDayInfoContainer.innerHTML = ``;
+
+    const randomEventsCount = getRandomNumber(1, 10);
+    renderEvents(eventsContainer, randomEventsCount);
+  };
+
 });
 
-const FIRST_LOAD_EVENTS_COUNT = 7;
-const eventsContainer = document.querySelector(`.trip-points`);
 
 const renderEvents = (dist, count) => {
 
   const dayData = makeDayData(count);
-  const events = [];
+  const date = dayData.date;
 
   dayData.data.forEach((event) => {
-    events.push(makeEvent(event));
+
+    const eventComponent = new Event(event);
+    const editEventComponent = new EventEdit(date, event);
+
+    dist.appendChild(eventComponent.render());
+
+    eventComponent.onEdit = () => {
+      editEventComponent.render();
+      dist.replaceChild(editEventComponent.element, eventComponent.element);
+      eventComponent.unrender();
+    };
+
+    editEventComponent.onSubmit = () => {
+      eventComponent.render();
+      dist.replaceChild(eventComponent.element, editEventComponent.element);
+      editEventComponent.unrender();
+    };
+
+    editEventComponent.onReset = () => {
+      eventComponent.render();
+      dist.replaceChild(eventComponent.element, editEventComponent.element);
+      editEventComponent.unrender();
+    };
   });
 
-  const dayEvents = makeDayEvents(dayData.date, events);
-  dist.insertAdjacentHTML(`beforeend`, dayEvents);
+  const tripDayComponent = new TripDay(date);
+  tripDayInfoContainer.appendChild(tripDayComponent.render());
 };
 
 renderEvents(eventsContainer, FIRST_LOAD_EVENTS_COUNT);
-
-const filterLabels = document.querySelectorAll(`.trip-filter__item`);
-
-[].forEach.call(filterLabels, (label) => {
-  label.addEventListener(`click`, () => {
-
-    eventsContainer.innerHTML = ``;
-
-    const randomEventsCount = getRandomNumber(1, 10);
-    renderEvents(eventsContainer, randomEventsCount);
-  });
-});
