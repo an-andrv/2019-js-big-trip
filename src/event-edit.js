@@ -1,7 +1,8 @@
-import {createElement} from './utils';
+import {EventComponent} from './event-component';
 
-export class EventEdit {
+export class EventEdit extends EventComponent {
   constructor(date, data) {
+    super();
     this._date = date;
     this._icon = data.event.icon;
     this._title = data.event.title;
@@ -12,7 +13,6 @@ export class EventEdit {
     this._price = data.price;
     this._offers = data.offers;
 
-    this._element = null;
     this._onSubmit = null;
     this._onReset = null;
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
@@ -27,10 +27,6 @@ export class EventEdit {
   _onResetButtonClick(evt) {
     evt.preventDefault();
     return typeof this._onReset === `function` && this._onReset();
-  }
-
-  get element() {
-    return this._element;
   }
 
   set onSubmit(value) {
@@ -159,22 +155,10 @@ export class EventEdit {
       .addEventListener(`reset`, this._onResetButtonClick);
   }
 
-  render() {
-    this._element = createElement(this.template);
-    this.bind();
-    return this._element;
-  }
-
   unbind() {
     this._element.querySelector(`form`)
       .removeEventListener(`submit`, this._onSubmitButtonClick);
     this._element.querySelector(`form`)
       .removeEventListener(`reset`, this._onResetButtonClick);
   }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
-  }
-
 }
