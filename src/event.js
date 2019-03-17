@@ -1,7 +1,8 @@
-import {createElement} from './utils';
+import {EventComponent} from './event-component';
 
-export class Event {
+export class Event extends EventComponent {
   constructor(data) {
+    super();
     this._icon = data.event.icon;
     this._title = data.event.title;
     this._location = data.event.location;
@@ -9,7 +10,6 @@ export class Event {
     this._price = data.price;
     this._offers = data.offers;
 
-    this._element = null;
     this._state = {
       // Состояние компонента
     };
@@ -19,10 +19,6 @@ export class Event {
 
   _onEditButtonClick() {
     return typeof this._onEdit === `function` && this._onEdit();
-  }
-
-  get element() {
-    return this._element;
   }
 
   set onEdit(value) {
@@ -64,20 +60,9 @@ export class Event {
       .addEventListener(`click`, this._onEditButtonClick);
   }
 
-  render() {
-    this._element = createElement(this.template);
-    this.bind();
-    return this._element;
-  }
-
   unbind() {
     this._element.querySelector(`.trip-icon`)
       .removeEventListener(`click`, this._onEditButtonClick);
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
   }
 
 }
