@@ -53,6 +53,7 @@ const renderEvents = (dist, count) => {
       event.destination = newObject.destination;
       event.time.from = newObject.time.from;
       event.time.to = newObject.time.to;
+      event.time.duration = newObject.time.duration;
       event.price = newObject.price;
       event.offers = newObject.offers;
 

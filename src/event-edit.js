@@ -1,6 +1,7 @@
 import {EventComponent} from './event-component';
 import {eventsData} from './mock';
 import flatpickr from 'flatpickr';
+import {getFormatTimeDifference} from './utils';
 
 export class EventEdit extends EventComponent {
   constructor(date, data) {
@@ -40,6 +41,7 @@ export class EventEdit extends EventComponent {
       },
       timeTo: (value) => {
         target.time.to = value;
+        target.time.duration = getFormatTimeDifference(target.time.to, target.time.from);
       },
       price: (value) => {
         target.price = value;
@@ -105,6 +107,7 @@ export class EventEdit extends EventComponent {
       time: {
         from: ``,
         to: ``,
+        duration: ``
       },
       price: ``,
       offers: [],
