@@ -47,7 +47,14 @@ const renderEvents = (dist, count) => {
       eventComponent.unrender();
     };
 
-    editEventComponent.onSubmit = () => {
+    editEventComponent.onSubmit = (newObject) => {
+      event.title = newObject.title;
+      event.dueDate = newObject.dueDate;
+      event.tags = newObject.tags;
+      event.color = newObject.color;
+      event.repeatingDays = newObject.repeatingDays;
+
+      eventComponent.update(event);
       eventComponent.render();
       dist.replaceChild(eventComponent.element, editEventComponent.element);
       editEventComponent.unrender();

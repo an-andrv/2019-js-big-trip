@@ -65,4 +65,13 @@ export class Event extends EventComponent {
       .removeEventListener(`click`, this._onEditButtonClick);
   }
 
+  update(data) {
+    this._mapElement = data.mapElement;
+    this._icon = data.event.icon;
+    this._title = data.event.title;
+    this._location = data.event.location;
+    this._price = data.price;
+    this._offers = data.offers;
+  }
+
 }

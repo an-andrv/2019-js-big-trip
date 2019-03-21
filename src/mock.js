@@ -32,32 +32,32 @@ const foodPlaces = [`Restaurant`, `Cafe`];
 const hospitality = [`Hotel`, `Room`];
 
 // типы точки маршрута
-const eventNames = [`Taxi`, `Bus`, `Train`, `Ship`, `Transport`, `Drive`, `Flight`, `Check-in`, `Sightseeing`, `Restaurant`];
-const eventsData = new Map([ // for..of
-  [`Taxi`, {
+const eventNames = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`];
+export const eventsData = new Map([ // for..of
+  [`taxi`, {
     icon: `🚕`,
     title: `Taxi to`,
-    destination: places,
+    location: places,
     offers: [
       `Add luggage`,
       `Switch to comfort class`,
       `Order UBER`,
     ],
   }],
-  [`Bus`, {
+  [`bus`, {
     icon: `🚌`,
     title: `Bus to`,
-    destination: places.concat(cities).concat(sights),
+    location: places.concat(cities).concat(sights),
     offers: [
       `Add luggage`,
       `Switch to comfort class`,
       `Choose seats`,
     ],
   }],
-  [`Train`, {
+  [`train`, {
     icon: `🚂`,
     title: `Train to`,
-    destination: cities,
+    location: cities,
     offers: [
       `Add luggage`,
       `Switch to comfort class`,
@@ -65,70 +65,70 @@ const eventsData = new Map([ // for..of
       `Choose seats`,
     ],
   }],
-  [`Ship`, {
+  [`ship`, {
     icon: `🛳️`,
     title: `Ship to`,
-    destination: cities,
+    location: cities,
     offers: [
       `Add luggage`,
       `Switch to comfort class`,
       `Choose seats`,
     ],
   }],
-  [`Transport`, {
+  [`transport`, {
     icon: `🚊`,
     title: `Other transport to`,
-    destination: places.concat(cities).concat(sights),
+    location: places.concat(cities).concat(sights),
     offers: [
       `Add luggage`,
       `Switch to comfort class`,
       `Choose seats`,
     ],
   }],
-  [`Drive`, {
+  [`drive`, {
     icon: `🚗`,
     title: `Drive to`,
-    destination: places.concat(cities).concat(sights),
+    location: places.concat(cities).concat(sights),
     offers: [
       `Rent a car`,
       `Switch to comfort class`,
       `Choose seats`,
     ],
   }],
-  [`Flight`, {
+  [`flight`, {
     icon: `✈️`,
     title: `Flight to`,
-    destination: cities,
+    location: cities,
     offers: [
       `Add luggage`,
       `Add meal`,
       `Choose seats`,
     ],
   }],
-  [`Check-in`, {
+  [`check-in`, {
     icon: `🏨`,
     title: `Check into`,
-    destination: hospitality,
+    location: hospitality,
     offers: [
       `Add breakfast`,
       `Early check-in`,
       `Wi-fi`,
     ],
   }],
-  [`Sightseeing`, {
+  [`sightseeing`, {
     icon: `🏛️`,
     title: `Sightseeing to`,
-    destination: sights,
+    location: sights,
     offers: [
       `Audio guide`,
       `Add a meal`,
       `Wi-fi`,
     ],
   }],
-  [`Restaurant`, {
+  [`restaurant`, {
     icon: `🍴`,
     title: `Eat in`,
-    destination: foodPlaces,
+    location: foodPlaces,
     offers: [
       `Book a table`,
       `Vegetarian cuisine`,
@@ -190,10 +190,11 @@ const makeEventData = (date) => {
   const eventDataChoosen = eventsData.get(eventNameChoosen);
 
   return {
+    mapElement: eventDataChoosen,
     event: {
       icon: eventDataChoosen.icon,
       title: eventDataChoosen.title,
-      location: eventDataChoosen.destination[getRandomNumber(0, eventDataChoosen.destination.length - 1)],
+      location: eventDataChoosen.location[getRandomNumber(0, eventDataChoosen.location.length - 1)],
     },
     picture: chooseSights(),
     description: makeUniqueArray(getRandomNumber(MIN_DESCRIPTION_COUNT, MAX_DESCRIPTION_COUNT), descriptions).join(` `),

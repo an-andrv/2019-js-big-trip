@@ -1,9 +1,14 @@
 import {EventComponent} from './event-component';
+import {eventsData} from './mock';
+import {getRandomNumber} from './utils';
+import flatpickr from 'flatpickr';
+import moment from 'moment';
 
 export class EventEdit extends EventComponent {
   constructor(date, data) {
     super();
     this._date = date;
+    this._mapElement = data.mapElement;
     this._icon = data.event.icon;
     this._title = data.event.title;
     this._location = data.event.location;
@@ -15,18 +20,98 @@ export class EventEdit extends EventComponent {
 
     this._onSubmit = null;
     this._onReset = null;
+
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onResetButtonClick = this._onResetButtonClick.bind(this);
+
+    this._onChangeIcon = this._onChangeIcon.bind(this);
+  }
+
+  static createMapper(target) {
+
+    // let fullDate = ``;
+    return {
+      travelWay: (value) => {
+        target.mapElement = eventsData.get(value)
+        target.event.icon = target.mapElement.icon;
+        target.event.title = target.mapElement.title;
+      },
+      destination: (value) => target.event.location = value,
+      // time: (value) => target.time = value,
+      price: (value) => target.price = value,
+      offer: (value) => target.offers.push(value),
+    };
   }
 
   _onSubmitButtonClick(evt) {
+
     evt.preventDefault();
-    return typeof this._onSubmit === `function` && this._onSubmit();
+    const formData = new FormData(this._element.querySelector(`.trip-point`));
+    for (const pair of formData.entries()) {
+      console.log(pair);
+    }
+    const newData = this._processForm(formData);
+    if (typeof this._onSubmit === `function`) {
+      this._onSubmit(newData);
+    }
+
+    this.update(newData);
   }
 
   _onResetButtonClick(evt) {
     evt.preventDefault();
     return typeof this._onReset === `function` && this._onReset();
+  }
+
+  _onChangeIcon(evt) {
+    const choosenIcon = evt.target.value;
+
+    if (choosenIcon && choosenIcon !== `on`) {
+      this._mapElement = eventsData.get(choosenIcon);
+      console.log(this._icon, this._title, this._location, this._offers);
+      console.log(this._mapElement);
+
+      this._icon = this._mapElement.icon;
+      this._title = this._mapElement.title;
+      this._location = this._mapElement.location[getRandomNumber(0, this._mapElement.location.length - 1)];
+      this._offers = this._mapElement.offers;
+      console.log(this._icon, this._title, this._location, this._offers);
+
+      this._element.querySelector(`.travel-way__label`).innerHTML = this._icon;
+      this._element.querySelector(`.point__destination-label`).innerHTML = this._title;
+      this._element.querySelector(`.point__destination-input`).value = this._location;
+      this._element.querySelector(`.point__offers-wrap`).innerHTML = this._makeOffers(this._offers);
+    }
+  }
+
+  _partialUpdate() {
+    this._element.innerHTML = this.template;
+  }
+
+  _processForm(formData) {
+    const entry = {
+      mapElement: ``,
+      event: {
+        icon: ``,
+        title: ``,
+        location: ``,
+      },
+      time: ``,
+      price: ``,
+      offers: [],
+    
+    };
+
+    const eventEditMapper = EventEdit.createMapper(entry);
+
+    for (const pair of formData.entries()) {
+      const [property, value] = pair;
+      if (eventEditMapper[property]) {
+        eventEditMapper[property](value);
+      }
+    }
+
+    return entry;
   }
 
   set onSubmit(value) {
@@ -37,7 +122,7 @@ export class EventEdit extends EventComponent {
     this._onReset = value;
   }
 
-  makeOffers(offersData) {
+  _makeOffers(offersData) {
     const offers = [];
     offersData.forEach((offer) => {
       offers.push(`
@@ -69,25 +154,37 @@ export class EventEdit extends EventComponent {
       
               <div class="travel-way__select">
                 <div class="travel-way__select-group">
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-taxi" name="travel-way" value="taxi">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-taxi" name="travelWay" value="taxi">
                   <label class="travel-way__select-label" for="travel-way-taxi">🚕 taxi</label>
       
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-bus" name="travel-way" value="bus">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-bus" name="travelWay" value="bus">
                   <label class="travel-way__select-label" for="travel-way-bus">🚌 bus</label>
       
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-train" name="travel-way" value="train">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-train" name="travelWay" value="train">
                   <label class="travel-way__select-label" for="travel-way-train">🚂 train</label>
       
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-flight" name="travel-way" value="train" checked>
-                  <label class="travel-way__select-label" for="travel-way-flight">✈️ flight</label>
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-flight" name="travelWay" value="flight" checked>
+                  <label class="travel-way__select-label" for="travel-way-flight">✈️ flight</label>      
+                  
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-ship" name="travelWay" value="ship" checked>
+                  <label class="travel-way__select-label" for="travel-way-ship">🛳️ ship</label>      
+                  
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-transport" name="travelWay" value="transport" checked>
+                  <label class="travel-way__select-label" for="travel-way-transport">🚊 transport</label>
+
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-drive" name="travelWay" value="drive" checked>
+                  <label class="travel-way__select-label" for="travel-way-drive">🚗 drive</label>
                 </div>
       
                 <div class="travel-way__select-group">
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-check-in" name="travel-way" value="check-in">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-check-in" name="travelWay" value="check-in">
                   <label class="travel-way__select-label" for="travel-way-check-in">🏨 check-in</label>
       
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-sightseeing" name="travel-way" value="sight-seeing">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-sightseeing" name="travelWay" value="sight-seeing">
                   <label class="travel-way__select-label" for="travel-way-sightseeing">🏛 sightseeing</label>
+                  
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-restaurant" name="travelWay" value="restaurant">
+                  <label class="travel-way__select-label" for="travel-way-restaurant">🍴 restaurant</label>
                 </div>
               </div>
             </div>
@@ -105,7 +202,7 @@ export class EventEdit extends EventComponent {
       
             <label class="point__time">
               choose time
-              <input class="point__input" type="text" value="${this._time.from} — ${this._title.to}" name="time" placeholder="${this._time.from} — ${this._title.to}">
+              <input class="point__input" type="text" value="" name="time" placeholder="">
             </label>
       
             <label class="point__price">
@@ -130,7 +227,7 @@ export class EventEdit extends EventComponent {
               <h3 class="point__details-title">offers</h3>
       
               <div class="point__offers-wrap">
-                ${this.makeOffers(this._offers)}
+                ${this._makeOffers(this._offers)}
               </div>
       
             </section>
@@ -153,6 +250,11 @@ export class EventEdit extends EventComponent {
       .addEventListener(`submit`, this._onSubmitButtonClick);
     this._element.querySelector(`form`)
       .addEventListener(`reset`, this._onResetButtonClick);
+    this._element.querySelector(`.trip-point`)
+      .addEventListener(`change`, this._onChangeIcon);
+
+    flatpickr(this._element.querySelector(`.point__time`),{mode: "range", dateFormat: "j F", defaultDate: ["00:00", "00:00"]});
+
   }
 
   unbind() {
@@ -160,5 +262,16 @@ export class EventEdit extends EventComponent {
       .removeEventListener(`submit`, this._onSubmitButtonClick);
     this._element.querySelector(`form`)
       .removeEventListener(`reset`, this._onResetButtonClick);
+    this._element.querySelector(`form`)
+      .removeEventListener(`change`, this._onChangeIcon);
+  }
+
+  update(data) {
+    this._mapElement = data.mapElement;
+    this._icon = data.event.icon;
+    this._title = data.event.title;
+    this._location = data.event.location;
+    this._price = data.price;
+    this._offers = data.offers;
   }
 }
