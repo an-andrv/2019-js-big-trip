@@ -28,7 +28,6 @@ filterNames.forEach((name) => {
 
 });
 
-
 const renderEvents = (dist, count) => {
 
   const dayData = makeDayData(count);
@@ -48,11 +47,14 @@ const renderEvents = (dist, count) => {
     };
 
     editEventComponent.onSubmit = (newObject) => {
+      event.mapElement = newObject.mapElement;
+      event.icon = newObject.icon;
       event.title = newObject.title;
-      event.dueDate = newObject.dueDate;
-      event.tags = newObject.tags;
-      event.color = newObject.color;
-      event.repeatingDays = newObject.repeatingDays;
+      event.destination = newObject.destination;
+      event.time.from = newObject.time.from;
+      event.time.to = newObject.time.to;
+      event.price = newObject.price;
+      event.offers = newObject.offers;
 
       eventComponent.update(event);
       eventComponent.render();

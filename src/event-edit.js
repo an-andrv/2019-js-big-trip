@@ -1,17 +1,15 @@
 import {EventComponent} from './event-component';
 import {eventsData} from './mock';
-import {getRandomNumber} from './utils';
 import flatpickr from 'flatpickr';
-import moment from 'moment';
 
 export class EventEdit extends EventComponent {
   constructor(date, data) {
     super();
     this._date = date;
     this._mapElement = data.mapElement;
-    this._icon = data.event.icon;
-    this._title = data.event.title;
-    this._location = data.event.location;
+    this._icon = data.icon;
+    this._title = data.title;
+    this._destination = data.destination;
     this._picture = data.picture;
     this._description = data.description;
     this._time = data.time;
@@ -28,33 +26,36 @@ export class EventEdit extends EventComponent {
   }
 
   static createMapper(target) {
-
-    // let fullDate = ``;
     return {
       travelWay: (value) => {
-        target.mapElement = eventsData.get(value)
-        target.event.icon = target.mapElement.icon;
-        target.event.title = target.mapElement.title;
+        target.mapElement = eventsData.get(value);
+        target.icon = target.mapElement.icon;
+        target.title = target.mapElement.title;
       },
-      destination: (value) => target.event.location = value,
-      // time: (value) => target.time = value,
-      price: (value) => target.price = value,
+      destination: (value) => {
+        target.destination = value;
+      },
+      timeFrom: (value) => {
+        target.time.from = value;
+      },
+      timeTo: (value) => {
+        target.time.to = value;
+      },
+      price: (value) => {
+        target.price = value;
+      },
       offer: (value) => target.offers.push(value),
     };
   }
 
   _onSubmitButtonClick(evt) {
-
     evt.preventDefault();
-    const formData = new FormData(this._element.querySelector(`.trip-point`));
-    for (const pair of formData.entries()) {
-      console.log(pair);
-    }
+    const formData = new FormData(this._element.querySelector(`.trip-form`));
     const newData = this._processForm(formData);
+
     if (typeof this._onSubmit === `function`) {
       this._onSubmit(newData);
     }
-
     this.update(newData);
   }
 
@@ -63,24 +64,29 @@ export class EventEdit extends EventComponent {
     return typeof this._onReset === `function` && this._onReset();
   }
 
+  _onChangeDate() {
+    this.unbind();
+    this._partialUpdate();
+    this.bind();
+  }
+
   _onChangeIcon(evt) {
     const choosenIcon = evt.target.value;
 
     if (choosenIcon && choosenIcon !== `on`) {
       this._mapElement = eventsData.get(choosenIcon);
-      console.log(this._icon, this._title, this._location, this._offers);
-      console.log(this._mapElement);
-
       this._icon = this._mapElement.icon;
       this._title = this._mapElement.title;
-      this._location = this._mapElement.location[getRandomNumber(0, this._mapElement.location.length - 1)];
+      this._destination = this._mapElement.destination;
       this._offers = this._mapElement.offers;
-      console.log(this._icon, this._title, this._location, this._offers);
 
       this._element.querySelector(`.travel-way__label`).innerHTML = this._icon;
       this._element.querySelector(`.point__destination-label`).innerHTML = this._title;
-      this._element.querySelector(`.point__destination-input`).value = this._location;
+      this._element.querySelector(`.point__destination-input`).value = this._destination[0];
       this._element.querySelector(`.point__offers-wrap`).innerHTML = this._makeOffers(this._offers);
+      this._element.querySelector(`#destination-select`).innerHTML = this._makeDestinationDatalist(this._mapElement.destination);
+
+      this._element.querySelector(`.travel-way__toggle`).checked = false;
     }
   }
 
@@ -94,12 +100,15 @@ export class EventEdit extends EventComponent {
       event: {
         icon: ``,
         title: ``,
-        location: ``,
+        destination: ``,
       },
-      time: ``,
+      time: {
+        from: ``,
+        to: ``,
+      },
       price: ``,
       offers: [],
-    
+
     };
 
     const eventEditMapper = EventEdit.createMapper(entry);
@@ -122,12 +131,23 @@ export class EventEdit extends EventComponent {
     this._onReset = value;
   }
 
+  _makeDestinationDatalist(destinationsData) {
+    const destinations = [];
+    destinationsData.forEach((destination) => {
+      destinations.push(`
+        <option value="${destination}"></option>
+      `);
+    });
+
+    return destinations.join(``);
+  }
+
   _makeOffers(offersData) {
     const offers = [];
-    offersData.forEach((offer) => {
+    offersData.forEach((offer, index) => {
       offers.push(`
-        <input class="point__offers-input visually-hidden" type="checkbox" id="add-luggage" name="offer" value="add-luggage">
-        <label for="add-luggage" class="point__offers-label">
+        <input class="point__offers-input visually-hidden" type="checkbox" id="offer-${index}" name="offer" value="${offer}">
+        <label for="offer-${index}" class="point__offers-label">
           <span class="point__offer-service">${offer}</span> + €<span class="point__offer-price">30</span>
         </label>
       `);
@@ -140,7 +160,7 @@ export class EventEdit extends EventComponent {
   get template() {
     return `
       <article class="point">
-        <form action="" method="get">
+        <form action="" class="trip-form" method="get">
           <header class="point__header">
             <label class="point__date">
               choose day
@@ -180,7 +200,7 @@ export class EventEdit extends EventComponent {
                   <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-check-in" name="travelWay" value="check-in">
                   <label class="travel-way__select-label" for="travel-way-check-in">🏨 check-in</label>
       
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-sightseeing" name="travelWay" value="sight-seeing">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-sightseeing" name="travelWay" value="sightseeing">
                   <label class="travel-way__select-label" for="travel-way-sightseeing">🏛 sightseeing</label>
                   
                   <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-restaurant" name="travelWay" value="restaurant">
@@ -191,18 +211,16 @@ export class EventEdit extends EventComponent {
       
             <div class="point__destination-wrap">
               <label class="point__destination-label" for="destination">${this._title}</label>
-              <input class="point__destination-input" list="destination-select" id="destination" value="${this._location}" name="destination">
+              <input class="point__destination-input" list="destination-select" id="destination" value="${this._destination}" name="destination">
               <datalist id="destination-select">
-                <option value="airport"></option>
-                <option value="Geneva"></option>
-                <option value="Chamonix"></option>
-                <option value="hotel"></option>
+                ${this._makeDestinationDatalist(this._mapElement.destination)}
               </datalist>
             </div>
       
-            <label class="point__time">
-              choose time
-              <input class="point__input" type="text" value="" name="time" placeholder="">
+            <label class="point__time ">
+              choose time                      
+              <input class="point__input point__time-from" type="text" value="${this._time.from}" name="timeFrom" placeholder="">                    
+              <input class="point__input point__time-to" type="text" value="${this._time.to}" name="timeTo" placeholder="">
             </label>
       
             <label class="point__price">
@@ -246,31 +264,38 @@ export class EventEdit extends EventComponent {
   }
 
   bind() {
-    this._element.querySelector(`form`)
+    this._element.querySelector(`.trip-form`)
       .addEventListener(`submit`, this._onSubmitButtonClick);
-    this._element.querySelector(`form`)
+    this._element.querySelector(`.trip-form`)
       .addEventListener(`reset`, this._onResetButtonClick);
-    this._element.querySelector(`.trip-point`)
+    this._element.querySelector(`.travel-way`)
       .addEventListener(`change`, this._onChangeIcon);
+    this._element.querySelector(`.point__time`)
+      .addEventListener(`click`, this._onChangeColor);
 
-    flatpickr(this._element.querySelector(`.point__time`),{mode: "range", dateFormat: "j F", defaultDate: ["00:00", "00:00"]});
+    // eslint-disable-next-line camelcase
+    flatpickr(this._element.querySelector(`.point__time-from`), {enableTime: true, noCalendar: true, dateFormat: `H:i`, time_24hr: true});
+    // eslint-disable-next-line camelcase
+    flatpickr(this._element.querySelector(`.point__time-to`), {enableTime: true, noCalendar: true, dateFormat: `H:i`, time_24hr: true});
 
   }
 
   unbind() {
-    this._element.querySelector(`form`)
+    this._element.querySelector(`.trip-form`)
       .removeEventListener(`submit`, this._onSubmitButtonClick);
-    this._element.querySelector(`form`)
+    this._element.querySelector(`.trip-form`)
       .removeEventListener(`reset`, this._onResetButtonClick);
-    this._element.querySelector(`form`)
+    this._element.querySelector(`.travel-way`)
       .removeEventListener(`change`, this._onChangeIcon);
+    this._element.querySelector(`.point__time`)
+      .removeEventListener(`click`, this._onChangeColor);
   }
 
   update(data) {
     this._mapElement = data.mapElement;
-    this._icon = data.event.icon;
-    this._title = data.event.title;
-    this._location = data.event.location;
+    this._icon = data.icon;
+    this._title = data.title;
+    this._destination = data.destination;
     this._price = data.price;
     this._offers = data.offers;
   }
