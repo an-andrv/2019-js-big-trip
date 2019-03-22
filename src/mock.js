@@ -1,4 +1,5 @@
-import {getRandomNumber, getFormatDate, getFormatTime, getFormatTimeDifference} from './utils';
+import {getRandomNumber} from './utils';
+import moment from 'moment';
 
 // константы времени
 const SECOND_MILLISECONDS = 1000;
@@ -32,9 +33,9 @@ const foodPlaces = [`Restaurant`, `Cafe`];
 const hospitality = [`Hotel`, `Room`];
 
 // типы точки маршрута
-const eventNames = [`Taxi`, `Bus`, `Train`, `Ship`, `Transport`, `Drive`, `Flight`, `Check-in`, `Sightseeing`, `Restaurant`];
-const eventsData = new Map([ // for..of
-  [`Taxi`, {
+const eventNames = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`];
+export const eventsData = new Map([ // for..of
+  [`taxi`, {
     icon: `🚕`,
     title: `Taxi to`,
     destination: places,
@@ -44,7 +45,7 @@ const eventsData = new Map([ // for..of
       `Order UBER`,
     ],
   }],
-  [`Bus`, {
+  [`bus`, {
     icon: `🚌`,
     title: `Bus to`,
     destination: places.concat(cities).concat(sights),
@@ -54,7 +55,7 @@ const eventsData = new Map([ // for..of
       `Choose seats`,
     ],
   }],
-  [`Train`, {
+  [`train`, {
     icon: `🚂`,
     title: `Train to`,
     destination: cities,
@@ -65,7 +66,7 @@ const eventsData = new Map([ // for..of
       `Choose seats`,
     ],
   }],
-  [`Ship`, {
+  [`ship`, {
     icon: `🛳️`,
     title: `Ship to`,
     destination: cities,
@@ -75,7 +76,7 @@ const eventsData = new Map([ // for..of
       `Choose seats`,
     ],
   }],
-  [`Transport`, {
+  [`transport`, {
     icon: `🚊`,
     title: `Other transport to`,
     destination: places.concat(cities).concat(sights),
@@ -85,7 +86,7 @@ const eventsData = new Map([ // for..of
       `Choose seats`,
     ],
   }],
-  [`Drive`, {
+  [`drive`, {
     icon: `🚗`,
     title: `Drive to`,
     destination: places.concat(cities).concat(sights),
@@ -95,7 +96,7 @@ const eventsData = new Map([ // for..of
       `Choose seats`,
     ],
   }],
-  [`Flight`, {
+  [`flight`, {
     icon: `✈️`,
     title: `Flight to`,
     destination: cities,
@@ -105,7 +106,7 @@ const eventsData = new Map([ // for..of
       `Choose seats`,
     ],
   }],
-  [`Check-in`, {
+  [`check-in`, {
     icon: `🏨`,
     title: `Check into`,
     destination: hospitality,
@@ -115,7 +116,7 @@ const eventsData = new Map([ // for..of
       `Wi-fi`,
     ],
   }],
-  [`Sightseeing`, {
+  [`sightseeing`, {
     icon: `🏛️`,
     title: `Sightseeing to`,
     destination: sights,
@@ -125,7 +126,7 @@ const eventsData = new Map([ // for..of
       `Wi-fi`,
     ],
   }],
-  [`Restaurant`, {
+  [`restaurant`, {
     icon: `🍴`,
     title: `Eat in`,
     destination: foodPlaces,
@@ -181,26 +182,23 @@ const makeUniqueArray = (count, source) => {
   return array;
 };
 
-const makeEventData = (date) => {
+const makeEventData = () => {
 
-  const firstDate = date;
-  const secondDate = new Date(firstDate.getTime() + MINUTES_IN_HOUR * SECONDS_IN_MINUTE * SECOND_MILLISECONDS);
 
   const eventNameChoosen = eventNames[getRandomNumber(0, eventNames.length - 1)];
   const eventDataChoosen = eventsData.get(eventNameChoosen);
 
   return {
-    event: {
-      icon: eventDataChoosen.icon,
-      title: eventDataChoosen.title,
-      location: eventDataChoosen.destination[getRandomNumber(0, eventDataChoosen.destination.length - 1)],
-    },
+    mapElement: eventDataChoosen,
+    icon: eventDataChoosen.icon,
+    title: eventDataChoosen.title,
+    destination: eventDataChoosen.destination[getRandomNumber(0, eventDataChoosen.destination.length - 1)],
     picture: chooseSights(),
     description: makeUniqueArray(getRandomNumber(MIN_DESCRIPTION_COUNT, MAX_DESCRIPTION_COUNT), descriptions).join(` `),
     time: {
-      from: getFormatTime(firstDate),
-      to: getFormatTime(secondDate),
-      duration: getFormatTimeDifference(firstDate, secondDate),
+      from: `12:00`,
+      to: `13:00`,
+      duration: `1H 0M`,
     },
     price: getRandomNumber(MIN_PRICE, MAX_PRICE),
     offers: makeUniqueArray(getRandomNumber(MIN_OFFERS_COUNT, MAX_OFFERS_COUNT), eventDataChoosen.offers),
@@ -212,8 +210,8 @@ export const makeDayData = (count) => {
   const date = makeRandomDate();
 
   const dayData = {
-    date: getFormatDate(date),
-    data: new Array(count).fill().map(() => makeEventData(date))
+    date: moment(date).format(`MMM D`),
+    data: new Array(count).fill().map(() => makeEventData())
   };
 
   return dayData;

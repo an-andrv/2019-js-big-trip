@@ -3,9 +3,9 @@ import {EventComponent} from './event-component';
 export class Event extends EventComponent {
   constructor(data) {
     super();
-    this._icon = data.event.icon;
-    this._title = data.event.title;
-    this._location = data.event.location;
+    this._icon = data.icon;
+    this._title = data.title;
+    this._destination = data.destination;
     this._time = data.time;
     this._price = data.price;
     this._offers = data.offers;
@@ -42,7 +42,7 @@ export class Event extends EventComponent {
     return `
       <article class="trip-point">
         <i class="trip-icon">${this._icon}</i>
-        <h3 class="trip-point__title">${this._title} ${this._location}</h3>
+        <h3 class="trip-point__title">${this._title} ${this._destination}</h3>
         <p class="trip-point__schedule">
           <span class="trip-point__timetable">${this._time.from}&nbsp;&mdash; ${this._time.to}</span>
           <span class="trip-point__duration">${this._time.duration}</span>
@@ -63,6 +63,15 @@ export class Event extends EventComponent {
   unbind() {
     this._element.querySelector(`.trip-icon`)
       .removeEventListener(`click`, this._onEditButtonClick);
+  }
+
+  update(data) {
+    this._mapElement = data.mapElement;
+    this._icon = data.icon;
+    this._title = data.title;
+    this._destination = data.destination;
+    this._price = data.price;
+    this._offers = data.offers;
   }
 
 }

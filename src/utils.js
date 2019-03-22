@@ -2,37 +2,18 @@ export const getRandomNumber = (min, max) => {
   return Math.floor(Math.random() * (max - min) + min);
 };
 
-export const getFormatDate = (date) => {
-  const dateOptions = {
-    month: `short`,
-    day: `numeric`,
-  };
-
-  return date.toLocaleDateString(`en-US`, dateOptions);
-};
-
-export const getFormatTime = (date) => {
-  const timeOptions = {
-    hour: `numeric`,
-    minute: `numeric`
-  };
-
-  return date.toLocaleTimeString(`en-GB`, timeOptions);
-};
-
 export const getFormatTimeDifference = (firstDate, secondDate) => {
 
-  const SECOND_MILLISECONDS = 1000;
-  const SECONDS_IN_MINUTE = 60;
-  const MINUTES_IN_HOUR = 60;
+  const firstDateParse = firstDate.split(`:`);
+  const secondDateParse = secondDate.split(`:`);
 
-  const minuteMilliseconds = SECONDS_IN_MINUTE * SECOND_MILLISECONDS;
-  const hourMilliseconds = minuteMilliseconds * MINUTES_IN_HOUR;
+  let hours = firstDateParse[0] - secondDateParse[0];
+  let minutes = firstDateParse[1] - secondDateParse[1];
 
-  const dateDifference = secondDate - firstDate;
-
-  const hours = Math.floor(dateDifference / hourMilliseconds);
-  const minutes = Math.floor((dateDifference / minuteMilliseconds) - hours * MINUTES_IN_HOUR);
+  if (minutes < 0) {
+    minutes = 60 + minutes;
+    hours--;
+  }
 
   return hours + `h ` + minutes + `m`;
 };
