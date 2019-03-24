@@ -1,23 +1,19 @@
-import {createElement} from './utils';
+import {EventComponent} from './event-component';
 
-export class Filter {
+export class Filter extends EventComponent {
   constructor(name) {
+    super();
     this._name = name;
 
-    this._element = null;
-    this._onChangeCount = null;
+    this._onFilter = null;
   }
 
-  set onChangeCount(value) {
-    this._onChangeCount = value;
+  set onFilter(value) {
+    this._onFilter = value;
   }
 
-  _onChangeButtonClick() {
-    return typeof this._onChangeCount === `function` && this._onChangeCount();
-  }
-
-  get element() {
-    return this._element;
+  _onFilterClick(evt) {
+    return typeof this._onFilter === `function` && this._onFilter(evt.target.innerHTML);
   }
 
   get template() {
@@ -31,13 +27,7 @@ export class Filter {
 
   bind() {
     this._element.querySelector(`.trip-filter__item`)
-      .addEventListener(`click`, this._onChangeButtonClick.bind(this));
-  }
-
-  render() {
-    this._element = createElement(this.template);
-    this.bind();
-    return this._element;
+      .addEventListener(`click`, this._onFilterClick.bind(this));
   }
 
 }

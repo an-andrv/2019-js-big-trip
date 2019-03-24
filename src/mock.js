@@ -1,16 +1,16 @@
 import {getRandomNumber} from './utils';
-import moment from 'moment';
 
 // константы времени
 const SECOND_MILLISECONDS = 1000;
 const SECONDS_IN_MINUTE = 60;
 const MINUTES_IN_HOUR = 60;
 const HOURS_IN_DAY = 24;
+const DAYS_IN_TWO_WEEKS = 14;
 
 // ограничения
 // - даты
 const MIN_DAY_VALUE = 1;
-const MAX_DAY_VALUE = 14;
+const MAX_DAY_VALUE = 28;
 const MIN_HOUR_VALUE = 0;
 const MAX_HOUR_VALUE = 23;
 const MIN_MINUTES_VALUE = 0;
@@ -38,6 +38,7 @@ export const eventsData = new Map([ // for..of
   [`taxi`, {
     icon: `🚕`,
     title: `Taxi to`,
+    category: `transport`,
     destination: places,
     offers: [
       `Add luggage`,
@@ -48,6 +49,7 @@ export const eventsData = new Map([ // for..of
   [`bus`, {
     icon: `🚌`,
     title: `Bus to`,
+    category: `transport`,
     destination: places.concat(cities).concat(sights),
     offers: [
       `Add luggage`,
@@ -58,6 +60,7 @@ export const eventsData = new Map([ // for..of
   [`train`, {
     icon: `🚂`,
     title: `Train to`,
+    category: `transport`,
     destination: cities,
     offers: [
       `Add luggage`,
@@ -69,6 +72,7 @@ export const eventsData = new Map([ // for..of
   [`ship`, {
     icon: `🛳️`,
     title: `Ship to`,
+    category: `transport`,
     destination: cities,
     offers: [
       `Add luggage`,
@@ -79,6 +83,7 @@ export const eventsData = new Map([ // for..of
   [`transport`, {
     icon: `🚊`,
     title: `Other transport to`,
+    category: `transport`,
     destination: places.concat(cities).concat(sights),
     offers: [
       `Add luggage`,
@@ -89,6 +94,7 @@ export const eventsData = new Map([ // for..of
   [`drive`, {
     icon: `🚗`,
     title: `Drive to`,
+    category: `transport`,
     destination: places.concat(cities).concat(sights),
     offers: [
       `Rent a car`,
@@ -99,6 +105,7 @@ export const eventsData = new Map([ // for..of
   [`flight`, {
     icon: `✈️`,
     title: `Flight to`,
+    category: `transport`,
     destination: cities,
     offers: [
       `Add luggage`,
@@ -109,6 +116,7 @@ export const eventsData = new Map([ // for..of
   [`check-in`, {
     icon: `🏨`,
     title: `Check into`,
+    category: `events`,
     destination: hospitality,
     offers: [
       `Add breakfast`,
@@ -119,6 +127,7 @@ export const eventsData = new Map([ // for..of
   [`sightseeing`, {
     icon: `🏛️`,
     title: `Sightseeing to`,
+    category: `events`,
     destination: sights,
     offers: [
       `Audio guide`,
@@ -129,6 +138,7 @@ export const eventsData = new Map([ // for..of
   [`restaurant`, {
     icon: `🍴`,
     title: `Eat in`,
+    category: `events`,
     destination: foodPlaces,
     offers: [
       `Book a table`,
@@ -166,7 +176,7 @@ const makeRandomDate = () => {
   const randomHour = getRandomNumber(MIN_HOUR_VALUE, MAX_HOUR_VALUE);
   const randomMinutes = getRandomNumber(MIN_MINUTES_VALUE, MAX_MINUTES_VALUE);
 
-  return new Date(currentDateMilliseconds + (randomDay * dayMilliseconds) + ((randomHour * MINUTES_IN_HOUR + randomMinutes) * SECONDS_IN_MINUTE * SECOND_MILLISECONDS));
+  return new Date(currentDateMilliseconds - DAYS_IN_TWO_WEEKS * dayMilliseconds + (randomDay * dayMilliseconds) + ((randomHour * MINUTES_IN_HOUR + randomMinutes) * SECONDS_IN_MINUTE * SECOND_MILLISECONDS));
 };
 
 const makeUniqueArray = (count, source) => {
@@ -198,21 +208,18 @@ const makeEventData = () => {
     time: {
       from: `12:00`,
       to: `13:00`,
-      duration: `1H 0M`,
+      duration: `10H 50M`,
     },
     price: getRandomNumber(MIN_PRICE, MAX_PRICE),
     offers: makeUniqueArray(getRandomNumber(MIN_OFFERS_COUNT, MAX_OFFERS_COUNT), eventDataChoosen.offers),
+    isDeleted: false,
   };
 };
 
 export const makeDayData = (count) => {
 
-  const date = makeRandomDate();
-
-  const dayData = {
-    date: moment(date).format(`MMM D`),
+  return {
+    date: makeRandomDate(),
     data: new Array(count).fill().map(() => makeEventData())
   };
-
-  return dayData;
 };

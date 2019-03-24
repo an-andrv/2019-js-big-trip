@@ -1,33 +1,26 @@
-import {createElement} from './utils';
+import {EventComponent} from './event-component';
+import moment from 'moment';
 
-export class TripDay {
+export class TripDay extends EventComponent {
   constructor(date) {
+    super();
     this._date = date;
-
-    this._element = null;
-  }
-
-  get element() {
-    return this._element;
   }
 
   get template() {
     return `
-      <span>
-        <span class="trip-day__caption">Day</span>
-        <p class="trip-day__number">1</p>
-        <h2 class="trip-day__title">${this._date}</h2>
-      </span>
+      <section class="trip-day">
+        <article class="trip-day__info">
+          <span>
+            <span class="trip-day__caption">Day</span>
+            <p class="trip-day__number">1</p>
+            <h2 class="trip-day__title">${moment(this._date).format(`MMM D`)}</h2>
+          </span>
+        </article>
+        <div class="trip-day__items" id="day-${moment(this._date).format(`DD-MM-YYYY`)}">
+        </div>
+      </section>
     `.trim();
-  }
-
-  render() {
-    this._element = createElement(this.template);
-    return this._element;
-  }
-
-  unrender() {
-    this._element = null;
   }
 
 }
