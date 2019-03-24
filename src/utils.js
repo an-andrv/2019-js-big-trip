@@ -18,6 +18,27 @@ export const getFormatTimeDifference = (firstDate, secondDate) => {
   return hours + `h ` + minutes + `m`;
 };
 
+export const getTimeDifferenceSumm = (stringDate) => {
+
+  const stringDateParse = stringDate.split(` `);
+  let [stringHours, stringMinutes] = stringDateParse;
+
+  let hours = 0;
+  let minutes = 0;
+
+  const transformToNumberDate = (time) => {
+    let timeTransform = time.split(``);
+    timeTransform.pop();
+    timeTransform = timeTransform.length > 1 ? timeTransform[0] + timeTransform[1] : timeTransform[0];
+    return +timeTransform;
+  };
+
+  minutes += transformToNumberDate(stringMinutes);
+  hours += transformToNumberDate(stringHours);
+  hours += Math.round(minutes / 60);
+  return hours;
+};
+
 export const createElement = (template) => {
   const newElement = document.createElement(`div`);
   newElement.innerHTML = template;
