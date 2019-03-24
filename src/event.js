@@ -40,28 +40,30 @@ export class Event extends EventComponent {
 
   get template() {
     return `
-      <article class="trip-point">
-        <i class="trip-icon">${this._icon}</i>
-        <h3 class="trip-point__title">${this._title} ${this._destination}</h3>
-        <p class="trip-point__schedule">
-          <span class="trip-point__timetable">${this._time.from}&nbsp;&mdash; ${this._time.to}</span>
-          <span class="trip-point__duration">${this._time.duration}</span>
-        </p>
-        <p class="trip-point__price">&euro;&nbsp;${this._price}</p>
-        <ul class="trip-point__offers">
-          ${this.makeTags(this._offers)}
-        </ul>
-      </article>
+      <span>
+        <article class="trip-point">
+          <i class="trip-icon">${this._icon}</i>
+          <h3 class="trip-point__title">${this._title} ${this._destination}</h3>
+          <p class="trip-point__schedule">
+            <span class="trip-point__timetable">${this._time.from}&nbsp;&mdash; ${this._time.to}</span>
+            <span class="trip-point__duration">${this._time.duration}</span>
+          </p>
+          <p class="trip-point__price">&euro;&nbsp;${this._price}</p>
+          <ul class="trip-point__offers">
+            ${this.makeTags(this._offers)}
+          </ul>
+        </article>
+      </span>
     `.trim();
   }
 
   bind() {
-    this._element.querySelector(`.trip-icon`)
+    this._element.querySelector(`.trip-point`)
       .addEventListener(`click`, this._onEditButtonClick);
   }
 
   unbind() {
-    this._element.querySelector(`.trip-icon`)
+    this._element.querySelector(`.trip-point`)
       .removeEventListener(`click`, this._onEditButtonClick);
   }
 
