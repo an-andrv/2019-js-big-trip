@@ -225,8 +225,8 @@ export class EventEdit extends EventComponent {
       
             <label class="point__time ">
               choose time                      
-              <input class="point__input point__time-from" type="text" value="${this._time.from}" name="timeFrom" placeholder="">                    
-              <input class="point__input point__time-to" type="text" value="${this._time.to}" name="timeTo" placeholder="">
+              <input class="point__input point__time-from" type="text" value="${this._time.from}" name="timeFrom" placeholder="19:00">                    
+              <input class="point__input point__time-to" type="text" value="${this._time.to}" name="timeTo" placeholder="21:00">
             </label>
       
             <label class="point__price">
