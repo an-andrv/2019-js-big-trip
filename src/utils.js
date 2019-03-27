@@ -44,3 +44,34 @@ export const createElement = (template) => {
   newElement.innerHTML = template;
   return newElement.firstChild;
 };
+
+export const filterDays = (days, filterName) => {
+  let filteredDays = [];
+
+  switch (filterName) {
+    case `everything`:
+      filteredDays = days;
+      break;
+
+    case `future`:
+      filteredDays = days.filter((dayData) => dayData.date.getTime() > Date.now());
+      break;
+
+    case `past`:
+      filteredDays = days.filter((dayData) => dayData.date.getTime() < Date.now());
+      break;
+  }
+  return filteredDays;
+};
+
+export const checkStatus = (response) => {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  } else {
+    throw new Error(`${response.status}: ${response.statusText}`);
+  }
+};
+
+export const toJSON = (response) => {
+  return response.json();
+};
