@@ -6,7 +6,9 @@ import {Filter} from './filter';
 import moment from 'moment';
 import {moneyParams, transportParams, timeSpendParams} from './chart';
 import Chart from 'chart.js';
-import {getTimeDifferenceSumm} from './utils';
+import {getTimeDifferenceSumm, filterDays} from './utils';
+import {SERVER_ADDRESS} from './consts';
+import {RestService} from './rest-service';
 
 const filterNames = [`everything`, `future`, `past`];
 const filtersSection = document.querySelector(`.trip-filter`);
@@ -20,25 +22,17 @@ const makeSomeDaysData = () => {
 
 const daysData = makeSomeDaysData();
 
-const filterDays = (days, filterName) => {
-  let filteredDays = [];
-  tripPointsContainer.innerHTML = ``;
+const restService = new RestService({endPoint: SERVER_ADDRESS});
+console.log(`getPoints :: `, restService.getPoints()); // 20
+console.log(`getOffers :: `, restService.getOffers()); // 6
+console.log(`getDestinations :: `, restService.getDestinations()); // 28
 
-  switch (filterName) {
-    case `everything`:
-      filteredDays = days;
-      break;
+const events = restService.getPoints()
+  .then((points) => new Array(points.length).fill().map((el) => {
+    return el;
+  }));
 
-    case `future`:
-      filteredDays = days.filter((dayData) => dayData.date.getTime() > Date.now());
-      break;
-
-    case `past`:
-      filteredDays = days.filter((dayData) => dayData.date.getTime() < Date.now());
-      break;
-  }
-  return filteredDays;
-};
+console.log(`events :: `, events); // 20
 
 filterNames.forEach((name) => {
 
@@ -46,6 +40,7 @@ filterNames.forEach((name) => {
   filtersSection.appendChild(filterComponent.render());
 
   filterComponent.onFilter = (filterName) => {
+    tripPointsContainer.innerHTML = ``;
     const filteredDaysData = filterDays(daysData, filterName);
     filteredDaysData.forEach((dayData) => renderEvents(tripPointsContainer, dayData));
   };
