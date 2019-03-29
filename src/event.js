@@ -25,14 +25,16 @@ export class Event extends EventComponent {
     this._onEdit = value;
   }
 
-  makeTags(offersData) {
+  _makeOffers(offersData) {
     const offers = [];
     offersData.forEach((offer) => {
-      offers.push(`
-        <li>
-          <button class="trip-point__offer">${offer} +&euro;&nbsp;20</button>
-        </li>
-      `);
+      if (offer.accepted) {
+        offers.push(`
+          <li>
+            <button class="trip-point__offer">${offer.title} +&euro;&nbsp;20</button>
+          </li>
+        `);
+      }
     });
 
     return offers.join(``);
@@ -50,7 +52,7 @@ export class Event extends EventComponent {
           </p>
           <p class="trip-point__price">&euro;&nbsp;${this._price}</p>
           <ul class="trip-point__offers">
-            ${this.makeTags(this._offers)}
+            ${this._makeOffers(this._offers)}
           </ul>
         </article>
       </span>

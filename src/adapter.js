@@ -1,9 +1,11 @@
 import {pointsList} from './consts';
+import moment from 'moment';
 
 export class Adapter {
   constructor(data) {
-    this.id = data[`id`] || ``;
-    this.type = data[`type`] || ``; // : "sightseeing" // в mock не было // icon, title
+
+    this.id = +data[`id`]+1 || ``;
+    this.type = data[`type`] || ``;
     this.icon = pointsList[this.type].icon || ``;
     this.title = pointsList[this.type].title || ``;
 
@@ -11,9 +13,14 @@ export class Adapter {
     this.picture = data[`destination`].pictures || []; // переписать место рендеринга картинок
     this.description = data[`destination`].description || ``;
 
-    this.time.from = data[`date_from`] || ``; // : 1553518454619
-    this.time.to = data[`date_to`] || ``; // : 1553579965432
-    this.time.duration = (data[`date_from`] - data[`date_to`]) || ``; // : 1553579965432
+    this.dateD = moment(data[`date_from`]).format(`D`) || ``,
+    this.dateM = moment(data[`date_from`]).format(`MMM`) || ``,
+    this.time = {
+      from: moment(data[`date_from`]).format(`HH:mm`) || ``,
+      to: moment(data[`date_to`]).format(`HH:mm`) || ``,
+      duration: moment(data[`date_to`] - data[`date_from`] - 3*60*60*1000 ).format(`HH[H] mm[M]`) || ``,
+    };
+
     this.price = data[`base_price`] || ``; // : 500
 
     this.offers = data[`offers`] || []; // : (3) [{…}, {…}, {…}]
@@ -40,7 +47,7 @@ export class Adapter {
   }
 
   static parsePoints(data) {
-    return data.map(Adapter.parseTask);
+    return data.map(Adapter.parsePoint);
   }
 
 }

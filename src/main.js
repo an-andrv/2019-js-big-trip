@@ -7,32 +7,20 @@ import moment from 'moment';
 import {moneyParams, transportParams, timeSpendParams} from './chart';
 import Chart from 'chart.js';
 import {getTimeDifferenceSumm, filterDays} from './utils';
-import {SERVER_ADDRESS} from './consts';
+import {SERVER_ADDRESS, AUTHORIZATION} from './consts';
 import {RestService} from './rest-service';
 
 const filterNames = [`everything`, `future`, `past`];
 const filtersSection = document.querySelector(`.trip-filter`);
 const tripPointsContainer = document.querySelector(`.trip-points`);
 
-const makeSomeDaysData = () => {
-  return new Array(5).fill().map(() => { // 5 дней по 3 события
-    return makeDayData(3);
-  });
-};
+const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AUTHORIZATION});
 
-const daysData = makeSomeDaysData();
-
-const restService = new RestService({endPoint: SERVER_ADDRESS});
-console.log(`getPoints :: `, restService.getPoints()); // 20
 console.log(`getOffers :: `, restService.getOffers()); // 6
 console.log(`getDestinations :: `, restService.getDestinations()); // 28
 
-const events = restService.getPoints()
-  .then((points) => new Array(points.length).fill().map((el) => {
-    return el;
-  }));
-
-console.log(`events :: `, events); // 20
+const daysData = restService.getPoints()
+  .then(data => data.filter(Boolean));
 
 filterNames.forEach((name) => {
 
@@ -40,61 +28,83 @@ filterNames.forEach((name) => {
   filtersSection.appendChild(filterComponent.render());
 
   filterComponent.onFilter = (filterName) => {
-    tripPointsContainer.innerHTML = ``;
+
     const filteredDaysData = filterDays(daysData, filterName);
-    filteredDaysData.forEach((dayData) => renderEvents(tripPointsContainer, dayData));
+    filteredDaysData.forEach((dayData) => renderTripDay(tripPointsContainer, dayData));
+
   };
 });
 
-const renderEvents = (dist, dayData) => {
-  const date = dayData.date;
-  const tripDayComponent = new TripDay(date);
-  dist.appendChild(tripDayComponent.render());
+const renderEvent = (dist, event) => {
+  if (event.isDeleted === false) {
+    const eventComponent = new Event(event);
+    const editEventComponent = new EventEdit(event);
 
-  const tripDay = dist.querySelector(`#day-${moment(date).format(`DD-MM-YYYY`)}`); // // trip-day-${moment(date).format(`DD-MM-YYYY`)}__items
+    dist.appendChild(eventComponent.render());
 
-  for (let event of dayData.data) {
-    if (event.isDeleted === false) {
-      const eventComponent = new Event(event);
-      const editEventComponent = new EventEdit(date, event);
+    eventComponent.onEdit = () => {
+      editEventComponent.render();
+      dist.replaceChild(editEventComponent.element, eventComponent.element);
+      eventComponent.unrender();
+    };
 
-      tripDay.appendChild(eventComponent.render());
+    editEventComponent.onSubmit = (newEvent) => {
+      event.mapElement = newEvent.mapElement;
+      event.icon = newEvent.icon;
+      event.title = newEvent.title;
+      event.destination = newEvent.destination;
+      event.time.from = newEvent.time.from;
+      event.time.to = newEvent.time.to;
+      event.time.duration = newEvent.time.duration;
+      event.price = newEvent.price;
+      event.offers = newEvent.offers;
 
-      eventComponent.onEdit = () => {
-        editEventComponent.render();
-        tripDay.replaceChild(editEventComponent.element, eventComponent.element);
-        eventComponent.unrender();
-      };
+      eventComponent.update(event);
+      eventComponent.render();
+      dist.replaceChild(eventComponent.element, editEventComponent.element);
+      editEventComponent.unrender();
+    };
 
-      editEventComponent.onSubmit = (newEvent) => {
+    editEventComponent.onDelete = (isDeletedValue) => {
+      event.isDeleted = isDeletedValue;
 
-        event.mapElement = newEvent.mapElement;
-        event.icon = newEvent.icon;
-        event.title = newEvent.title;
-        event.destination = newEvent.destination;
-        event.time.from = newEvent.time.from;
-        event.time.to = newEvent.time.to;
-        event.time.duration = newEvent.time.duration;
-        event.price = newEvent.price;
-        event.offers = newEvent.offers;
-
-        eventComponent.update(event);
-        eventComponent.render();
-        tripDay.replaceChild(eventComponent.element, editEventComponent.element);
-        editEventComponent.unrender();
-      };
-
-      editEventComponent.onDelete = (isDeletedValue) => {
-        event.isDeleted = isDeletedValue;
-
-        tripDay.removeChild(editEventComponent.element);
-        editEventComponent.unrender();
-      };
-    }
+      dist.removeChild(editEventComponent.element);
+      editEventComponent.unrender();
+    };
   }
 };
 
-daysData.forEach((dayData) => renderEvents(tripPointsContainer, dayData));
+const renderTripDay = (data, dist) => {
+
+  data
+    .then((points) => {
+
+      let currentDay = points[0].dateD;
+      let currentMonth = points[0].dateM;
+
+      let tripDayComponent = new TripDay(currentDay, currentMonth);
+      dist.appendChild(tripDayComponent.render());
+      let tripDay = dist.querySelector(`#day-${currentDay}-${currentMonth}`);
+
+      for (let point of points) {
+
+        const day = point.dateD;
+        const month = point.dateM;
+
+        if ( currentMonth !== month || currentDay !== day) {
+          tripDayComponent = new TripDay(day, month);
+          dist.appendChild(tripDayComponent.render());
+          tripDay = dist.querySelector(`#day-${point.dateD}-${point.dateM}`); // // trip-day-${moment(date).format(`DD-MM-YYYY`)}__items
+          currentMonth = month;
+          currentDay = day;
+        }
+
+        renderEvent(tripDay, point);
+      }
+    });
+};
+
+renderTripDay(daysData, tripPointsContainer);
 
 const mainContainer = document.querySelector(`.main`);
 const statisticContainer = document.querySelector(`.statistic`);
@@ -172,7 +182,7 @@ const renderCharts = (data) => {
 
 };
 
-renderCharts(daysData);
+// renderCharts(daysData);
 
 // eslint-disable-next-line no-unused-vars
 const moneyChart = new Chart(moneyCtx, moneyParams);

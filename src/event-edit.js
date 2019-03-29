@@ -4,9 +4,9 @@ import flatpickr from 'flatpickr';
 import {getFormatTimeDifference} from './utils';
 
 export class EventEdit extends EventComponent {
-  constructor(date, data) {
+  constructor(data) {
     super();
-    this._date = date;
+    console.log(data);
     this._mapElement = data.mapElement;
     this._icon = data.icon;
     this._title = data.title;
@@ -162,7 +162,6 @@ export class EventEdit extends EventComponent {
     return offers.join(``);
   }
 
-
   get template() {
     return `
       <article class="point">
@@ -170,7 +169,7 @@ export class EventEdit extends EventComponent {
           <header class="point__header">
             <label class="point__date">
               choose day
-              <input class="point__input" type="text" placeholder="${this._date}" name="day">
+              <input class="point__input" type="text" placeholder="" name="day">
             </label>
       
             <div class="travel-way">
@@ -180,36 +179,36 @@ export class EventEdit extends EventComponent {
       
               <div class="travel-way__select">
                 <div class="travel-way__select-group">
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-taxi" name="travelWay" value="taxi">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-taxi" name="travelWay" value="taxi" ${ this._icon === `🚕` ? `checked` : ``}>
                   <label class="travel-way__select-label" for="travel-way-taxi">🚕 taxi</label>
       
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-bus" name="travelWay" value="bus">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-bus" name="travelWay" value="bus" ${ this._icon === `🚌` ? `checked` : ``}>
                   <label class="travel-way__select-label" for="travel-way-bus">🚌 bus</label>
       
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-train" name="travelWay" value="train">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-train" name="travelWay" value="train" ${ this._icon === `🚂` ? `checked` : ``}>
                   <label class="travel-way__select-label" for="travel-way-train">🚂 train</label>
       
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-flight" name="travelWay" value="flight" checked>
-                  <label class="travel-way__select-label" for="travel-way-flight">✈️ flight</label>      
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-flight" name="travelWay" value="flight" ${ this._icon === `✈` ? `checked` : ``}>
+                  <label class="travel-way__select-label" for="travel-way-flight">✈ flight</label>      
                   
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-ship" name="travelWay" value="ship" checked>
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-ship" name="travelWay" value="ship" ${ this._icon === `🛳️` ? `checked` : ``}>
                   <label class="travel-way__select-label" for="travel-way-ship">🛳️ ship</label>      
                   
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-transport" name="travelWay" value="transport" checked>
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-transport" name="travelWay" value="transport" ${ this._icon === `🚊` ? `checked` : ``}>
                   <label class="travel-way__select-label" for="travel-way-transport">🚊 transport</label>
 
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-drive" name="travelWay" value="drive" checked>
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-drive" name="travelWay" value="drive" ${ this._icon === `🚗` ? `checked` : ``}>
                   <label class="travel-way__select-label" for="travel-way-drive">🚗 drive</label>
                 </div>
       
                 <div class="travel-way__select-group">
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-check-in" name="travelWay" value="check-in">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-check-in" name="travelWay" value="check-in" ${ this._icon === `🏨` ? `checked` : ``}>
                   <label class="travel-way__select-label" for="travel-way-check-in">🏨 check-in</label>
       
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-sightseeing" name="travelWay" value="sightseeing">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-sightseeing" name="travelWay" value="sightseeing" ${ this._icon === `🏛` ? `checked` : ``}>
                   <label class="travel-way__select-label" for="travel-way-sightseeing">🏛 sightseeing</label>
                   
-                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-restaurant" name="travelWay" value="restaurant">
+                  <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-restaurant" name="travelWay" value="restaurant" ${ this._icon === `🍴` ? `checked` : ``}>
                   <label class="travel-way__select-label" for="travel-way-restaurant">🍴 restaurant</label>
                 </div>
               </div>
@@ -219,7 +218,6 @@ export class EventEdit extends EventComponent {
               <label class="point__destination-label" for="destination">${this._title}</label>
               <input class="point__destination-input" list="destination-select" id="destination" value="${this._destination}" name="destination">
               <datalist id="destination-select">
-                ${this._makeDestinationDatalist(this._mapElement.destination)}
               </datalist>
             </div>
       
