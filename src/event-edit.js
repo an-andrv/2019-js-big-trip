@@ -7,25 +7,25 @@ export class EventEdit extends EventComponent {
   constructor(data) {
     super();
     console.log(data);
-    this._mapElement = data.mapElement;
+    this._id = data.id;
+    this._type = data.type;
     this._icon = data.icon;
     this._title = data.title;
     this._destination = data.destination;
-    this._picture = data.picture;
+    this._picture = data.picture; // массив объектов
     this._description = data.description;
-    this._time = data.time;
+    this._time = data.time; // from to
     this._price = data.price;
-    this._offers = data.offers;
+    this._offers = data.offers; // массив
 
     this._isDeleted = data.isDeleted;
+    // isFavorite: false
 
     this._onSubmit = null;
-    this._onReset = null;
     this._onDelete = null;
 
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onDeleteButtonClick = this._onDeleteButtonClick.bind(this);
-
     this._onChangeIcon = this._onChangeIcon.bind(this);
   }
 
@@ -44,7 +44,6 @@ export class EventEdit extends EventComponent {
       },
       timeTo: (value) => {
         target.time.to = value;
-        target.time.duration = getFormatTimeDifference(target.time.to, target.time.from);
       },
       price: (value) => {
         target.price = value;
@@ -55,20 +54,16 @@ export class EventEdit extends EventComponent {
 
   _processForm(formData) {
     const entry = {
-      mapElement: ``,
-      event: {
-        icon: ``,
-        title: ``,
-        destination: ``,
-      },
+      type: ``,
+      icon: ``,
+      title: ``,
+      destination: ``,
       time: {
         from: ``,
         to: ``,
-        duration: ``
       },
       price: ``,
       offers: [],
-
     };
 
     const eventEditMapper = EventEdit.createMapper(entry);
@@ -90,6 +85,9 @@ export class EventEdit extends EventComponent {
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
     const formData = new FormData(this._element.querySelector(`.trip-form`));
+    for (let pair of formData.entries()) {
+      console.log(pair);
+    }
     const newData = this._processForm(formData);
 
     if (typeof this._onSubmit === `function`) {
@@ -152,14 +150,25 @@ export class EventEdit extends EventComponent {
     const offers = [];
     offersData.forEach((offer, index) => {
       offers.push(`
-        <input class="point__offers-input visually-hidden" type="checkbox" id="offer-${index}" name="offer" value="${offer}">
+        <input class="point__offers-input visually-hidden" type="checkbox" id="offer-${index}" name="offer" value="${offer}" ${offer.accepted ? `checked` : ``}>
         <label for="offer-${index}" class="point__offers-label">
-          <span class="point__offer-service">${offer}</span> + €<span class="point__offer-price">30</span>
+          <span class="point__offer-service">${offer.title}</span> + €<span class="point__offer-price">${offer.price}</span>
         </label>
       `);
     });
 
     return offers.join(``);
+  }
+
+  _makePicturesList(urls) {
+    const destinations = [];
+    urls.forEach((url) => {
+      destinations.push(`
+        <img src="${url.src}" alt="${url.description}" class="point__destination-image">
+      `);
+    });
+
+    return destinations.join(``);
   }
 
   get template() {
@@ -257,7 +266,7 @@ export class EventEdit extends EventComponent {
               <h3 class="point__details-title">Destination</h3>
               <p class="point__destination-text">${this._description}</p>
               <div class="point__destination-images">
-                <img src="${this._picture}" alt="picture from place" class="point__destination-image">
+                ${this._makePicturesList(this._picture)}
               </div>
             </section>
             <input type="hidden" class="point__total-price" name="total-price" value="">
@@ -300,6 +309,7 @@ export class EventEdit extends EventComponent {
     this._icon = data.icon;
     this._title = data.title;
     this._destination = data.destination;
+    this._time = data.time;
     this._price = data.price;
     this._offers = data.offers;
   }

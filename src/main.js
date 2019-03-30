@@ -19,8 +19,14 @@ const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AU
 console.log(`getOffers :: `, restService.getOffers()); // 6
 console.log(`getDestinations :: `, restService.getDestinations()); // 28
 
-const daysData = restService.getPoints()
-  .then(data => data.filter(Boolean));
+const daysData = [];
+
+restService.getPoints()
+  .then((data) => data.filter(Boolean))
+  .then((points) => {
+    renderTripDay(points, tripPointsContainer);
+    points.forEach((point) => daysData.push(point));
+  });
 
 filterNames.forEach((name) => {
 
@@ -28,10 +34,9 @@ filterNames.forEach((name) => {
   filtersSection.appendChild(filterComponent.render());
 
   filterComponent.onFilter = (filterName) => {
-
     const filteredDaysData = filterDays(daysData, filterName);
-    filteredDaysData.forEach((dayData) => renderTripDay(tripPointsContainer, dayData));
-
+    tripPointsContainer.innerHTML = ``;
+    renderTripDay(filteredDaysData, tripPointsContainer);
   };
 });
 
@@ -74,37 +79,31 @@ const renderEvent = (dist, event) => {
   }
 };
 
-const renderTripDay = (data, dist) => {
+const renderTripDay = (points, dist) => {
 
-  data
-    .then((points) => {
+  let currentDay = moment(points[0].time.from).format(`D`);
+  let currentMonth = moment(points[0].time.from).format(`MMM`);
 
-      let currentDay = points[0].dateD;
-      let currentMonth = points[0].dateM;
+  let tripDayComponent = new TripDay(currentDay, currentMonth);
+  dist.appendChild(tripDayComponent.render());
+  let tripDay = dist.querySelector(`#day-${currentDay}-${currentMonth}`);
 
-      let tripDayComponent = new TripDay(currentDay, currentMonth);
+  for (let point of points) {
+
+    const day = moment(point.time.from).format(`D`);
+    const month = moment(point.time.from).format(`MMM`);
+
+    if (currentMonth !== month || currentDay !== day) {
+      tripDayComponent = new TripDay(day, month);
       dist.appendChild(tripDayComponent.render());
-      let tripDay = dist.querySelector(`#day-${currentDay}-${currentMonth}`);
+      tripDay = dist.querySelector(`#day-${day}-${month}`); // // trip-day-${moment(date).format(`DD-MM-YYYY`)}__items
+      currentMonth = month;
+      currentDay = day;
+    }
 
-      for (let point of points) {
-
-        const day = point.dateD;
-        const month = point.dateM;
-
-        if ( currentMonth !== month || currentDay !== day) {
-          tripDayComponent = new TripDay(day, month);
-          dist.appendChild(tripDayComponent.render());
-          tripDay = dist.querySelector(`#day-${point.dateD}-${point.dateM}`); // // trip-day-${moment(date).format(`DD-MM-YYYY`)}__items
-          currentMonth = month;
-          currentDay = day;
-        }
-
-        renderEvent(tripDay, point);
-      }
-    });
+    renderEvent(tripDay, point);
+  }
 };
-
-renderTripDay(daysData, tripPointsContainer);
 
 const mainContainer = document.querySelector(`.main`);
 const statisticContainer = document.querySelector(`.statistic`);

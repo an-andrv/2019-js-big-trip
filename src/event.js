@@ -1,8 +1,10 @@
 import {EventComponent} from './event-component';
+import moment from 'moment';
 
 export class Event extends EventComponent {
   constructor(data) {
     super();
+    // console.log(data);
     this._icon = data.icon;
     this._title = data.title;
     this._destination = data.destination;
@@ -47,8 +49,8 @@ export class Event extends EventComponent {
           <i class="trip-icon">${this._icon}</i>
           <h3 class="trip-point__title">${this._title} ${this._destination}</h3>
           <p class="trip-point__schedule">
-            <span class="trip-point__timetable">${this._time.from}&nbsp;&mdash; ${this._time.to}</span>
-            <span class="trip-point__duration">${this._time.duration}</span>
+            <span class="trip-point__timetable">${this._time.from ? moment(this._time.from).format(`HH:mm`) : ``}&nbsp;&mdash; ${this._time.to ? moment(this._time.to).format(`HH:mm`) : ``}</span>
+            <span class="trip-point__duration">${moment(this._time.to - this._time.from - 3 * 60 * 60 * 1000).format(`HH[H] mm[M]`)}</span>
           </p>
           <p class="trip-point__price">&euro;&nbsp;${this._price}</p>
           <ul class="trip-point__offers">

@@ -54,11 +54,11 @@ export const filterDays = (days, filterName) => {
       break;
 
     case `future`:
-      filteredDays = days.filter((dayData) => dayData.date.getTime() > Date.now());
+      filteredDays = days.filter((dayData) => dayData.time.from > Date.now());
       break;
 
     case `past`:
-      filteredDays = days.filter((dayData) => dayData.date.getTime() < Date.now());
+      filteredDays = days.filter((dayData) => dayData.time.from < Date.now());
       break;
   }
   return filteredDays;
