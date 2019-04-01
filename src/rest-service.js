@@ -5,7 +5,7 @@ import {Adapter} from './adapter';
 export class RestService {
   constructor({endPoint, authorization}) {
     this._endPoint = endPoint;
-    this._authorization = authorization; //`Basic eo0w590ik29889a`; // Basic ${случайная строка} // Basic eo0w590ik29889a
+    this._authorization = authorization;
   }
 
   getPoints() {
@@ -15,15 +15,13 @@ export class RestService {
   }
 
   getDestinations() {
-    return this._load({url: `destinations`}) // Создайте для списка направлений отдельную структуру и запишите в неё полученные данные.
-      .then(toJSON)
-      // .then(Adapter.parseTasks);
+    return this._load({url: `destinations`})
+      .then(toJSON);
   }
 
   getOffers() {
     return this._load({url: `offers`})
-      .then(toJSON)
-      // .then(Adapter.parseTasks);
+      .then(toJSON);
   }
 
   createTask({point}) {

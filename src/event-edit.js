@@ -1,22 +1,25 @@
 import {EventComponent} from './event-component';
-import {eventsData} from './mock';
+import {pointsList} from './consts';
 import flatpickr from 'flatpickr';
-import {getFormatTimeDifference} from './utils';
+
+import moment from 'moment';
 
 export class EventEdit extends EventComponent {
-  constructor(data) {
-    super();
-    console.log(data);
+  constructor(data, offersData, destinationsData) {
+    super();    
+    // console.log(data);
     this._id = data.id;
     this._type = data.type;
     this._icon = data.icon;
     this._title = data.title;
-    this._destination = data.destination;
     this._picture = data.picture; // массив объектов
     this._description = data.description;
     this._time = data.time; // from to
     this._price = data.price;
+    this._destination = data.destination;
     this._offers = data.offers; // массив
+    this._offersData = offersData;
+    this._destinationsData = destinationsData;
 
     this._isDeleted = data.isDeleted;
     // isFavorite: false
@@ -26,15 +29,15 @@ export class EventEdit extends EventComponent {
 
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onDeleteButtonClick = this._onDeleteButtonClick.bind(this);
-    this._onChangeIcon = this._onChangeIcon.bind(this);
+    this._onChangeTravelWay = this._onChangeTravelWay.bind(this);
   }
 
   static createMapper(target) {
     return {
       travelWay: (value) => {
-        target.mapElement = eventsData.get(value);
-        target.icon = target.mapElement.icon;
-        target.title = target.mapElement.title;
+        target.type = value;
+        target.icon = pointsList[value].icon;
+        target.title = pointsList[value].title;
       },
       destination: (value) => {
         target.destination = value;
@@ -54,6 +57,7 @@ export class EventEdit extends EventComponent {
 
   _processForm(formData) {
     const entry = {
+      id: this._id,
       type: ``,
       icon: ``,
       title: ``,
@@ -75,6 +79,29 @@ export class EventEdit extends EventComponent {
       }
     }
 
+    entry.time.from = new Date(moment(this._time.from).format(`YYYY-MM-DD`) + `T` + entry.time.from).getTime();
+    entry.time.to = new Date(moment(this._time.to).format(`YYYY-MM-DD`) + `T` + entry.time.to).getTime();
+
+    if (!entry.type && !entry.icon && !entry.title) {
+      entry.type = this._type;
+      entry.icon = pointsList[this._type].icon;
+      entry.title = pointsList[this._type].title;
+    }
+
+    const choosenOffersData = this._offersData.find((offerData) => offerData.type === entry.type);
+    const choosenOffers = [];
+    entry.offers.forEach((entryOffer) => {
+      choosenOffers.push(choosenOffersData.offers.find((offer) => {
+        return offer.name === entryOffer;
+      }));
+    });
+    entry.offers = choosenOffers;
+    entry.offers.forEach((offer) => {
+      offer.accepted = true;
+      offer.title = offer.name;
+      delete offer.name;
+    });
+
     return entry;
   }
 
@@ -85,11 +112,7 @@ export class EventEdit extends EventComponent {
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
     const formData = new FormData(this._element.querySelector(`.trip-form`));
-    for (let pair of formData.entries()) {
-      console.log(pair);
-    }
     const newData = this._processForm(formData);
-
     if (typeof this._onSubmit === `function`) {
       this._onSubmit(newData);
     }
@@ -107,24 +130,31 @@ export class EventEdit extends EventComponent {
     this.bind();
   }
 
-  _onChangeIcon(evt) {
-    const choosenIcon = evt.target.value;
+  _onChangeTravelWay(evt) {
+    const choosenValue = evt.target.value;
+    if (choosenValue && choosenValue !== `on` && this._offersData.find((offer) => offer.type === choosenValue)) {
 
-    if (choosenIcon && choosenIcon !== `on`) {
-      this._mapElement = eventsData.get(choosenIcon);
-      this._icon = this._mapElement.icon;
-      this._title = this._mapElement.title;
-      this._destination = this._mapElement.destination;
-      this._offers = this._mapElement.offers;
+      this._type = choosenValue;
+      this._icon = pointsList[choosenValue].icon;
+      this._title = pointsList[choosenValue].title;
+
+      let newOffers = this._offersData.find((offer) => offer.type === this._type).offers;
+      newOffers.forEach((offer) => {
+        offer.accepted = false;
+        offer.title = offer.name;
+        delete offer.name;
+      });
+      this._offers = newOffers;
 
       this._element.querySelector(`.travel-way__label`).innerHTML = this._icon;
       this._element.querySelector(`.point__destination-label`).innerHTML = this._title;
-      this._element.querySelector(`.point__destination-input`).value = this._destination[0];
-      this._element.querySelector(`.point__offers-wrap`).innerHTML = this._makeOffers(this._offers);
-      this._element.querySelector(`#destination-select`).innerHTML = this._makeDestinationDatalist(this._mapElement.destination);
-
+      this._element.querySelector(`.point__offers-wrap`).innerHTML = this._renderOffers();
       this._element.querySelector(`.travel-way__toggle`).checked = false;
     }
+  }
+
+  _onChangeDestination(evt) {
+    console.log(evt);
   }
 
   set onSubmit(value) {
@@ -135,32 +165,33 @@ export class EventEdit extends EventComponent {
     this._onDelete = value;
   }
 
-  _makeDestinationDatalist(destinationsData) {
+  _renderDestinationDatalist() {
     const destinations = [];
-    destinationsData.forEach((destination) => {
+    this._destinationsData.forEach((destination) => {
       destinations.push(`
-        <option value="${destination}"></option>
+        <option value="${destination.name}"></option>
       `);
     });
 
     return destinations.join(``);
   }
 
-  _makeOffers(offersData) {
-    const offers = [];
-    offersData.forEach((offer, index) => {
-      offers.push(`
-        <input class="point__offers-input visually-hidden" type="checkbox" id="offer-${index}" name="offer" value="${offer}" ${offer.accepted ? `checked` : ``}>
+  _renderOffers() {
+    const offerTemplates = [];
+    const offersList = this._offersData.find((offer) => offer.type === this._type);
+    offersList.offers.forEach((offer, index) => {
+      offerTemplates.push(`
+        <input class="point__offers-input visually-hidden" type="checkbox" id="offer-${index}" name="offer" value="${offer.name || offer.title}" ${this._offers.find((el) => el.title === offer.name && el.accepted === true) ? `checked` : ``}>
         <label for="offer-${index}" class="point__offers-label">
-          <span class="point__offer-service">${offer.title}</span> + €<span class="point__offer-price">${offer.price}</span>
+          <span class="point__offer-service">${offer.name || offer.title}</span> + €<span class="point__offer-price">${offer.price}</span>
         </label>
       `);
     });
 
-    return offers.join(``);
+    return offerTemplates.join(``);
   }
 
-  _makePicturesList(urls) {
+  _renderPicturesList(urls) {
     const destinations = [];
     urls.forEach((url) => {
       destinations.push(`
@@ -227,13 +258,14 @@ export class EventEdit extends EventComponent {
               <label class="point__destination-label" for="destination">${this._title}</label>
               <input class="point__destination-input" list="destination-select" id="destination" value="${this._destination}" name="destination">
               <datalist id="destination-select">
+                ${this._renderDestinationDatalist()}
               </datalist>
             </div>
       
             <label class="point__time ">
               choose time                      
-              <input class="point__input point__time-from" type="text" value="${this._time.from}" name="timeFrom" placeholder="19:00">                    
-              <input class="point__input point__time-to" type="text" value="${this._time.to}" name="timeTo" placeholder="21:00">
+              <input class="point__input point__time-from" type="text" value="${moment(this._time.from).format(`HH:mm`)}" name="timeFrom" placeholder="19:00">                    
+              <input class="point__input point__time-to" type="text" value="${moment(this._time.to).format(`HH:mm`)}" name="timeTo" placeholder="21:00">
             </label>
       
             <label class="point__price">
@@ -258,7 +290,7 @@ export class EventEdit extends EventComponent {
               <h3 class="point__details-title">offers</h3>
       
               <div class="point__offers-wrap">
-                ${this._makeOffers(this._offers)}
+                ${this._renderOffers()}
               </div>
       
             </section>
@@ -266,7 +298,7 @@ export class EventEdit extends EventComponent {
               <h3 class="point__details-title">Destination</h3>
               <p class="point__destination-text">${this._description}</p>
               <div class="point__destination-images">
-                ${this._makePicturesList(this._picture)}
+                ${this._renderPicturesList(this._picture)}
               </div>
             </section>
             <input type="hidden" class="point__total-price" name="total-price" value="">
@@ -282,9 +314,11 @@ export class EventEdit extends EventComponent {
     this._element.querySelector(`.trip-form`)
       .addEventListener(`reset`, this._onDeleteButtonClick);
     this._element.querySelector(`.travel-way`)
-      .addEventListener(`change`, this._onChangeIcon);
+      .addEventListener(`change`, this._onChangeTravelWay);
     this._element.querySelector(`.point__time`)
       .addEventListener(`click`, this._onChangeColor);
+    this._element.querySelector(`#destination-select`)
+      .addEventListener(`change`, this._onChangeDestination);
 
     // eslint-disable-next-line camelcase
     flatpickr(this._element.querySelector(`.point__time-from`), {enableTime: true, noCalendar: true, dateFormat: `H:i`, time_24hr: true});
@@ -299,13 +333,15 @@ export class EventEdit extends EventComponent {
     this._element.querySelector(`.trip-form`)
       .removeEventListener(`reset`, this._onDeleteButtonClick);
     this._element.querySelector(`.travel-way`)
-      .removeEventListener(`change`, this._onChangeIcon);
+      .removeEventListener(`change`, this._onChangeTravelWay);
     this._element.querySelector(`.point__time`)
       .removeEventListener(`click`, this._onChangeColor);
+    this._element.querySelector(`#destination-select`)
+      .removeEventListener(`change`, this._onChangeDestination);
   }
 
   update(data) {
-    this._mapElement = data.mapElement;
+    this._type = data.type;
     this._icon = data.icon;
     this._title = data.title;
     this._destination = data.destination;

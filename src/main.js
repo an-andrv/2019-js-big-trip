@@ -1,4 +1,3 @@
-import {makeDayData} from './mock';
 import {Event} from './event';
 import {EventEdit} from './event-edit';
 import {TripDay} from './trip-day';
@@ -16,20 +15,31 @@ const tripPointsContainer = document.querySelector(`.trip-points`);
 
 const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AUTHORIZATION});
 
+console.log(`getOffers :: `, restService.getPoints()); // 6
 console.log(`getOffers :: `, restService.getOffers()); // 6
 console.log(`getDestinations :: `, restService.getDestinations()); // 28
 
-const daysData = [];
+let daysData = [];
+let destinationsData = [];
+let offersData = [];
 
-restService.getPoints()
-  .then((data) => data.filter(Boolean))
-  .then((points) => {
-    renderTripDay(points, tripPointsContainer);
-    points.forEach((point) => daysData.push(point));
+const promiseArray = [
+  restService.getDestinations(),
+  restService.getOffers(),
+  restService.getPoints()
+];
+
+const handleAllPromises = Promise.all(promiseArray);
+
+handleAllPromises
+  .then((data) => {
+    destinationsData = data[0];
+    offersData = data[1];
+    daysData = data[2];
+    renderTripDay(daysData, tripPointsContainer);
   });
 
 filterNames.forEach((name) => {
-
   const filterComponent = new Filter(name);
   filtersSection.appendChild(filterComponent.render());
 
@@ -43,7 +53,7 @@ filterNames.forEach((name) => {
 const renderEvent = (dist, event) => {
   if (event.isDeleted === false) {
     const eventComponent = new Event(event);
-    const editEventComponent = new EventEdit(event);
+    const editEventComponent = new EventEdit(event, offersData, destinationsData);
 
     dist.appendChild(eventComponent.render());
 
@@ -54,20 +64,23 @@ const renderEvent = (dist, event) => {
     };
 
     editEventComponent.onSubmit = (newEvent) => {
-      event.mapElement = newEvent.mapElement;
+      event.id = newEvent.id;
       event.icon = newEvent.icon;
       event.title = newEvent.title;
       event.destination = newEvent.destination;
       event.time.from = newEvent.time.from;
       event.time.to = newEvent.time.to;
-      event.time.duration = newEvent.time.duration;
       event.price = newEvent.price;
       event.offers = newEvent.offers;
 
-      eventComponent.update(event);
-      eventComponent.render();
-      dist.replaceChild(eventComponent.element, editEventComponent.element);
-      editEventComponent.unrender();
+      const id = event.id;
+      restService.updateTask({id, event})
+        .then(
+            eventComponent.update(event),
+            eventComponent.render(),
+            dist.replaceChild(eventComponent.element, editEventComponent.element),
+            editEventComponent.unrender()
+        );
     };
 
     editEventComponent.onDelete = (isDeletedValue) => {
@@ -80,7 +93,6 @@ const renderEvent = (dist, event) => {
 };
 
 const renderTripDay = (points, dist) => {
-
   let currentDay = moment(points[0].time.from).format(`D`);
   let currentMonth = moment(points[0].time.from).format(`MMM`);
 

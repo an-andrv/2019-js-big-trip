@@ -6,7 +6,7 @@ export const Methods = {
 };
 
 export const SERVER_ADDRESS = `https://es8-demo-srv.appspot.com/big-trip/`;
-export const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
+export const AUTHORIZATION = `Basic er883jdzbdw13`;
 
 export const pointsList = {
   'taxi': {

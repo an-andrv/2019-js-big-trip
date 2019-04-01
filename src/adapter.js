@@ -2,8 +2,7 @@ import {pointsList} from './consts';
 
 export class Adapter {
   constructor(data) {
-
-    this.id = +data[`id`] + 1 || ``;
+    this.id = +data[`id`] || 0;
     this.type = data[`type`] || ``;
     this.icon = pointsList[this.type].icon || ``;
     this.title = pointsList[this.type].title || ``;
