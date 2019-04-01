@@ -27,9 +27,9 @@ export class Event extends EventComponent {
     this._onEdit = value;
   }
 
-  _makeOffers(offersData) {
+  _makeOffers() {
     const offers = [];
-    offersData.forEach((offer) => {
+    this._offers.forEach((offer) => {
       if (offer.accepted) {
         offers.push(`
           <li>
@@ -54,7 +54,7 @@ export class Event extends EventComponent {
           </p>
           <p class="trip-point__price">&euro;&nbsp;${this._price}</p>
           <ul class="trip-point__offers">
-            ${this._makeOffers(this._offers)}
+            ${this._makeOffers()}
           </ul>
         </article>
       </span>

@@ -30,6 +30,7 @@ export class EventEdit extends EventComponent {
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onDeleteButtonClick = this._onDeleteButtonClick.bind(this);
     this._onChangeTravelWay = this._onChangeTravelWay.bind(this);
+    this._onChangeDestination = this._onChangeDestination.bind(this);
   }
 
   static createMapper(target) {
@@ -154,7 +155,16 @@ export class EventEdit extends EventComponent {
   }
 
   _onChangeDestination(evt) {
-    console.log(evt);
+    const choosenDestination = this._destinationsData.find((descriptionData) => descriptionData.name === evt.target.value);
+
+    if (choosenDestination) {
+      this._destination = choosenDestination.name;
+      this._description = choosenDestination.description;
+      this._picture = choosenDestination.pictures;
+
+      this._element.querySelector(`.point__destination-text`).innerHTML = this._description;
+      this._element.querySelector(`.point__destination-images`).innerHTML = this._renderPicturesList(this._picture);
+    }
   }
 
   set onSubmit(value) {
@@ -192,14 +202,14 @@ export class EventEdit extends EventComponent {
   }
 
   _renderPicturesList(urls) {
-    const destinations = [];
-    urls.forEach((url) => {
-      destinations.push(`
+    const descriptions = [];
+    this._picture.forEach((url) => {
+      descriptions.push(`
         <img src="${url.src}" alt="${url.description}" class="point__destination-image">
       `);
     });
 
-    return destinations.join(``);
+    return descriptions.join(``);
   }
 
   get template() {
@@ -298,7 +308,7 @@ export class EventEdit extends EventComponent {
               <h3 class="point__details-title">Destination</h3>
               <p class="point__destination-text">${this._description}</p>
               <div class="point__destination-images">
-                ${this._renderPicturesList(this._picture)}
+                ${this._renderPicturesList()}
               </div>
             </section>
             <input type="hidden" class="point__total-price" name="total-price" value="">
@@ -317,7 +327,7 @@ export class EventEdit extends EventComponent {
       .addEventListener(`change`, this._onChangeTravelWay);
     this._element.querySelector(`.point__time`)
       .addEventListener(`click`, this._onChangeColor);
-    this._element.querySelector(`#destination-select`)
+    this._element.querySelector(`.point__destination-input`)
       .addEventListener(`change`, this._onChangeDestination);
 
     // eslint-disable-next-line camelcase
@@ -336,7 +346,7 @@ export class EventEdit extends EventComponent {
       .removeEventListener(`change`, this._onChangeTravelWay);
     this._element.querySelector(`.point__time`)
       .removeEventListener(`click`, this._onChangeColor);
-    this._element.querySelector(`#destination-select`)
+    this._element.querySelector(`.point__destination-input`)
       .removeEventListener(`change`, this._onChangeDestination);
   }
 
