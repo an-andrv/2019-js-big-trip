@@ -212,7 +212,7 @@ const makeEventData = () => {
     },
     price: getRandomNumber(MIN_PRICE, MAX_PRICE),
     offers: makeUniqueArray(getRandomNumber(MIN_OFFERS_COUNT, MAX_OFFERS_COUNT), eventDataChoosen.offers),
-    isDeleted: false,
+    // isDeleted: false,
   };
 };
 

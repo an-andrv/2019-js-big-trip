@@ -4,7 +4,7 @@ import moment from 'moment';
 export class Event extends EventComponent {
   constructor(data) {
     super();
-    // console.log(data);
+    console.log(data);
     this._icon = data.icon;
     this._title = data.title;
     this._destination = data.destination;

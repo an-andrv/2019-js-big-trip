@@ -51,45 +51,45 @@ filterNames.forEach((name) => {
 });
 
 const renderEvent = (dist, event) => {
-  if (event.isDeleted === false) {
-    const eventComponent = new Event(event);
-    const editEventComponent = new EventEdit(event, offersData, destinationsData);
 
-    dist.appendChild(eventComponent.render());
+  const eventComponent = new Event(event);
+  const editEventComponent = new EventEdit(event, offersData, destinationsData);
 
-    eventComponent.onEdit = () => {
-      editEventComponent.render();
-      dist.replaceChild(editEventComponent.element, eventComponent.element);
-      eventComponent.unrender();
-    };
+  dist.appendChild(eventComponent.render());
 
-    editEventComponent.onSubmit = (newEvent) => {
-      event.id = newEvent.id;
-      event.icon = newEvent.icon;
-      event.title = newEvent.title;
-      event.destination = newEvent.destination;
-      event.time.from = newEvent.time.from;
-      event.time.to = newEvent.time.to;
-      event.price = newEvent.price;
-      event.offers = newEvent.offers;
+  eventComponent.onEdit = () => {
+    editEventComponent.render();
+    dist.replaceChild(editEventComponent.element, eventComponent.element);
+    eventComponent.unrender();
+  };
 
-      const id = event.id;
-      restService.updateTask({id, event})
-        .then(
-            eventComponent.update(event),
-            eventComponent.render(),
-            dist.replaceChild(eventComponent.element, editEventComponent.element),
-            editEventComponent.unrender()
-        );
-    };
+  editEventComponent.onSubmit = (newData) => {
+      event.id = newData.id;
+      event.icon = newData.icon;
+      event.title = newData.title;
+      event.destination = newData.destination;
+      event.time.from = newData.time.from;
+      event.time.to = newData.time.to;
+      event.price = newData.price;
+      event.offers = newData.offers;
 
-    editEventComponent.onDelete = (isDeletedValue) => {
-      event.isDeleted = isDeletedValue;
+    restService.updateTask({id: event.id, data: event.toRAW()})
+      .then((newEvent) => {
+        eventComponent.update(newEvent),
+        eventComponent.render(),
+        dist.replaceChild(eventComponent.element, editEventComponent.element),
+        editEventComponent.unrender()
+      });
 
-      dist.removeChild(editEventComponent.element);
-      editEventComponent.unrender();
-    };
-  }
+  };
+
+  editEventComponent.onDelete = (isDeletedValue) => {
+    // event.isDeleted = isDeletedValue;
+
+    dist.removeChild(editEventComponent.element);
+    editEventComponent.unrender();
+  };
+  
 };
 
 const renderTripDay = (points, dist) => {

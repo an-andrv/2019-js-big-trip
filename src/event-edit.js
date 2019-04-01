@@ -20,9 +20,9 @@ export class EventEdit extends EventComponent {
     this._offers = data.offers; // массив
     this._offersData = offersData;
     this._destinationsData = destinationsData;
+    this._isFavorite = data.isFavorite;
 
-    this._isDeleted = data.isDeleted;
-    // isFavorite: false
+    // this._isDeleted = data.isDeleted;
 
     this._onSubmit = null;
     this._onDelete = null;
@@ -113,6 +113,9 @@ export class EventEdit extends EventComponent {
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
     const formData = new FormData(this._element.querySelector(`.trip-form`));
+    for (let f of formData) {
+      console.error(f);
+    }
     const newData = this._processForm(formData);
     if (typeof this._onSubmit === `function`) {
       this._onSubmit(newData);
@@ -121,8 +124,8 @@ export class EventEdit extends EventComponent {
   }
 
   _onDeleteButtonClick() {
-    this._isDeleted = true;
-    return typeof this._onDelete === `function` && this._onDelete(this._isDeleted);
+    // this._isDeleted = true;
+    // return typeof this._onDelete === `function` && this._onDelete(this._isDeleted);
   }
 
   _onChangeDate() {
@@ -188,15 +191,39 @@ export class EventEdit extends EventComponent {
 
   _renderOffers() {
     const offerTemplates = [];
-    const offersList = this._offersData.find((offer) => offer.type === this._type);
-    offersList.offers.forEach((offer, index) => {
+    console.error(this._offersData);
+    console.error(this._offers);
+
+    this._offers.forEach((offer, index) => {
       offerTemplates.push(`
-        <input class="point__offers-input visually-hidden" type="checkbox" id="offer-${index}" name="offer" value="${offer.name || offer.title}" ${this._offers.find((el) => el.title === offer.name && el.accepted === true) ? `checked` : ``}>
+        <input class="point__offers-input visually-hidden" type="checkbox" id="offer-${index}" name="offer" value="${offer.title}" ${ offer.accepted ? `checked` : ``}>
         <label for="offer-${index}" class="point__offers-label">
-          <span class="point__offer-service">${offer.name || offer.title}</span> + €<span class="point__offer-price">${offer.price}</span>
+          <span class="point__offer-service">${offer.title}</span> + €<span class="point__offer-price">${offer.price}</span>
         </label>
       `);
     });
+    console.error(offerTemplates);
+
+    const offersList = this._offersData.find((offerData) => offerData.type === this._type);
+    
+    offersList.offers.forEach((offerData, index) => {
+      this._offers.forEach((offer) => {
+        console.warn(`curr`, offer.title);
+        console.warn(`data`, offerData.name);
+        console.warn(offer.title !== offerData.name);
+        if (offer.title !== offerData.name) {
+        console.warn(`ВХОД`);
+          offerTemplates.push(`
+            <input class="point__offers-input visually-hidden" type="checkbox" id="offer-${index}" name="offer" value="${offerData.name}">
+            <label for="offer-${index}" class="point__offers-label">
+              <span class="point__offer-service">${offerData.name}</span> + €<span class="point__offer-price">${offerData.price}</span>
+            </label>
+          `);
+        }
+      });
+    });
+
+    console.error(offerTemplates);
 
     return offerTemplates.join(``);
   }
@@ -290,7 +317,7 @@ export class EventEdit extends EventComponent {
             </div>
       
             <div class="paint__favorite-wrap">
-              <input type="checkbox" class="point__favorite-input visually-hidden" id="favorite" name="favorite">
+              <input type="checkbox" class="point__favorite-input visually-hidden" id="favorite" name="favorite" ${ this._isFavorite ? `checked` : ``}>
               <label class="point__favorite" for="favorite">favorite</label>
             </div>
           </header>

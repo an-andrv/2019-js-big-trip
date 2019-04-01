@@ -24,18 +24,19 @@ export class RestService {
       .then(toJSON);
   }
 
-  createTask({point}) {
+  createPoint({point}) {
     return this._load({
-      url: `tasks`,
+      url: `points`,
       method: Methods.POST,
       body: JSON.stringify(point),
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then(toJSON)
-      .then(Adapter.parseTask);
+      .then(Adapter.parsePoint);
   }
 
-  updateTask({id, data}) {
+  updatePoint({id, data}) {
+    console.warn(id, data)
     return this._load({
       url: `points/${id}`,
       method: Methods.PUT,
@@ -43,10 +44,10 @@ export class RestService {
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then(toJSON)
-      .then(Adapter.parseTask);
+      .then(Adapter.parsePoint);
   }
 
-  deleteTask({id}) {
+  deletePoint({id}) {
     return this._load({url: `points/${id}`, method: Methods.DELETE});
   }
 
