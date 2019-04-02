@@ -6,8 +6,8 @@ export class PointAdapter {
     this.type = data[`type`] || ``;
     this.icon = pointsList[this.type].icon || ``;
     this.title = pointsList[this.type].title || ``;
-    this.destination = data[`destination`].name || ``; // : {name: , description: , pictures: [description: , src: ]}
-    this.picture = data[`destination`].pictures || []; // переписать место рендеринга картинок
+    this.destination = data[`destination`].name || ``;
+    this.picture = data[`destination`].pictures || [];
     this.description = data[`destination`].description || ``;
 
     this.time = {
@@ -15,42 +15,25 @@ export class PointAdapter {
       to: data[`date_to`] || ``,
     };
 
-    this.price = data[`base_price`] || ``; // : 500
-    this.offers = data[`offers`] || []; // : (3) [{…}, {…}, {…}]
-    // this.isDeleted = false; // отправлять ли на сервер инфу если событие удаление, is_deleted = true ???
-    this.isFavorite = data[`is_favorite`] || false; // : true // в mock не было
+    this.price = data[`base_price`] || ``;
+    this.offers = data[`offers`] || [];
+    this.isFavorite = data[`is_favorite`] || false;
   }
 
   toRAW() {
-    console.warn({
-      'id': this.id, //
-      'type': this.type,
-      'destination': {
-        name: this.destination,
-        description: this.description,
-        pictures: this.picture // [{description: , src: }]
-      },
-      'date_from': this.time.from, //
-      'date_to': this.time.to, //
-      'base_price': this.price, //
-      'offers': this.offers, // [{accepted: price: title: }]
-      'is_favorite': this.isFavorite, //
-    });
-    console.warn(this.picture);
-    console.warn(this.offers);
     return {
-      'id': this.id.toString(),//
+      'id': this.id.toString(),
       'type': this.type,
       'destination': {
         name: this.destination,
         description: this.description,
-        pictures: this.picture // [{description: , src: }]
+        pictures: this.picture
       },
-      'date_from': this.time.from,//
-      'date_to': this.time.to,//
-      'base_price': +this.price,//
-      'offers': this.offers, //[{accepted: price: title: }]
-      'is_favorite': this.isFavorite,//
+      'date_from': this.time.from,
+      'date_to': this.time.to,
+      'base_price': +this.price,
+      'offers': this.offers,
+      'is_favorite': this.isFavorite,
     };
   }
 

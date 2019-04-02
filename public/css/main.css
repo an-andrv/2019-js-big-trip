@@ -386,6 +386,7 @@ input[type=radio]:checked + .trip-sorting__item {
   border-radius: 23px;
   box-shadow: 0 11px 20px 0 rgba(0,0,0,0.22);
   margin-bottom: 60px;
+  border: 4px solid transparent;
 }
 .point__header {
   display: flex;
@@ -631,4 +632,26 @@ input[type=radio]:checked + .trip-sorting__item {
 .statistic__item {
   margin-bottom: 95px;
   width: 900px;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
 }

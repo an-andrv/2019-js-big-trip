@@ -5,8 +5,8 @@ import {Filter} from './filter';
 import moment from 'moment';
 import {moneyParams, transportParams, timeSpendParams} from './chart';
 import Chart from 'chart.js';
-import {getTimeDifferenceSumm, filterDays} from './utils';
-import {SERVER_ADDRESS, AUTHORIZATION} from './consts';
+import {getTimeDifferenceSumm, filterDays, changeServiceMessage} from './utils';
+import {SERVER_ADDRESS, AUTHORIZATION, SERVICE_MESSAGE_CONTAINER, Message} from './consts';
 import {RestService} from './rest-service';
 
 const filterNames = [`everything`, `future`, `past`];
@@ -23,20 +23,23 @@ let daysData = [];
 let destinationsData = [];
 let offersData = [];
 
-const promiseArray = [
+const serverData = [
   restService.getDestinations(),
   restService.getOffers(),
   restService.getPoints()
 ];
 
-const handleAllPromises = Promise.all(promiseArray);
+const handleServerData = Promise.all(serverData);
 
-handleAllPromises
+handleServerData
   .then((data) => {
     destinationsData = data[0];
     offersData = data[1];
     daysData = data[2];
     renderTripDay(daysData, tripPointsContainer);
+  })
+  .catch(() => {
+    changeServiceMessage(SERVICE_MESSAGE_CONTAINER, Message.ERROR_MESSAGE);
   });
 
 filterNames.forEach((name) => {
@@ -63,8 +66,21 @@ const renderEvent = (dist, event) => {
     eventComponent.unrender();
   };
 
+  const blockFormEdit = () => {
+    editEventComponent.element.querySelector(`.trip-form`).disabled = true;
+    editEventComponent.element.querySelector(`.point__button--save`).disabled = true;
+    editEventComponent.element.querySelector(`.point__button--delete`).disabled = true;
+  };
+
+  const unblockFormEdit = () => {
+    editEventComponent.element.querySelector(`.trip-form`).disabled = false;
+    editEventComponent.element.querySelector(`.point__button--save`).disabled = false;
+    editEventComponent.element.querySelector(`.point__button--delete`).disabled = false;
+  };
+
   editEventComponent.onSubmit = (newData) => {
     event.id = newData.id;
+    event.type = newData.type;
     event.icon = newData.icon;
     event.title = newData.title;
     event.destination = newData.destination;
@@ -72,22 +88,47 @@ const renderEvent = (dist, event) => {
     event.time.to = newData.time.to;
     event.price = newData.price;
     event.offers = newData.offers;
+    event.isFavorite = newData.isFavorite;
+
+    const saveButton = editEventComponent.element.querySelector(`.point__button--save`);
+
+    blockFormEdit();
+    changeServiceMessage(saveButton, Message.SAVING_MESSAGE);
 
     restService.updatePoint({id: event.id, data: event.toRAW()})
       .then((newEvent) => {
+        unblockFormEdit();
         eventComponent.update(newEvent);
         eventComponent.render();
         dist.replaceChild(eventComponent.element, editEventComponent.element);
         editEventComponent.unrender();
+      })
+      .catch(() => {
+        unblockFormEdit();
+        editEventComponent.shake();
+        changeServiceMessage(saveButton, Message.SAVE_MESSAGE);
       });
 
   };
 
-  editEventComponent.onDelete = (isDeletedValue) => {
-    // event.isDeleted = isDeletedValue;
+  editEventComponent.onDelete = (id) => {
 
-    dist.removeChild(editEventComponent.element);
-    editEventComponent.unrender();
+    const deleteButton = editEventComponent.element.querySelector(`.point__button--delete`);
+
+    blockFormEdit();
+    changeServiceMessage(deleteButton, Message.DELETING_MESSAGE);
+
+    restService.deletePoint({id})
+      .then(() => {
+        unblockFormEdit();
+        dist.removeChild(editEventComponent.element);
+        editEventComponent.unrender();
+      })
+      .catch(() => {
+        unblockFormEdit();
+        editEventComponent.shake();
+        changeServiceMessage(deleteButton, Message.DELETE_MESSAGE);
+      });
   };
 
 };
@@ -97,6 +138,7 @@ const renderTripDay = (points, dist) => {
   let currentMonth = moment(points[0].time.from).format(`MMM`);
 
   let tripDayComponent = new TripDay(currentDay, currentMonth);
+  dist.innerHTML = ``;
   dist.appendChild(tripDayComponent.render());
   let tripDay = dist.querySelector(`#day-${currentDay}-${currentMonth}`);
 

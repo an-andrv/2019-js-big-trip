@@ -7,7 +7,7 @@ import _ from 'lodash';
 
 export class EventEdit extends EventComponent {
   constructor(data, offersData, destinationsData) {
-    super();    
+    super();
     // console.log(data);
     this._id = data.id;
     this._type = data.type;
@@ -54,6 +54,9 @@ export class EventEdit extends EventComponent {
         target.price = value;
       },
       offer: (value) => target.offers.push(value),
+      favorite: (value) => {
+        target.isFavorite = value;
+      },
     };
   }
 
@@ -70,6 +73,7 @@ export class EventEdit extends EventComponent {
       },
       price: ``,
       offers: [],
+      isFavorite: ``
     };
 
     const eventEditMapper = EventEdit.createMapper(entry);
@@ -90,28 +94,12 @@ export class EventEdit extends EventComponent {
       entry.title = pointsList[this._type].title;
     }
 
-    const choosenOffersData = this._offersData.find((offerData) => offerData.type === entry.type).offers;
-    console.warn(choosenOffersData);
-    const choosenOffers = [];
-
-    entry.offers.forEach((entryOffer) => { // ["Order a breakfast", "Order a breakfast"]
-      choosenOffers.push(choosenOffersData.find((offer) => {
-        return offer.name === entryOffer;
-      }));
+    const updateOffers = _.cloneDeep(this._offers);
+    updateOffers.forEach((updateOffer) => {
+      updateOffer.accepted = entry.offers.includes(updateOffer.title);
     });
-    console.warn(choosenOffers);
 
-    entry.offers = _.cloneDeep(choosenOffers);
-    console.warn(entry.offers);
-
-    entry.offers.forEach((offer) => {
-      offer.accepted = true;
-      offer.title = offer.name;
-      delete offer.name;
-    });
-    console.warn(entry.offers);
-    console.warn(this._offersData);
-
+    entry.offers = updateOffers;
 
     return entry;
   }
@@ -123,9 +111,7 @@ export class EventEdit extends EventComponent {
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
     const formData = new FormData(this._element.querySelector(`.trip-form`));
-    for (let f of formData) {
-      console.error(f);
-    }
+
     const newData = this._processForm(formData);
     if (typeof this._onSubmit === `function`) {
       this._onSubmit(newData);
@@ -134,8 +120,7 @@ export class EventEdit extends EventComponent {
   }
 
   _onDeleteButtonClick() {
-    // this._isDeleted = true;
-    // return typeof this._onDelete === `function` && this._onDelete(this._isDeleted);
+    return typeof this._onDelete === `function` && this._onDelete(this._id);
   }
 
   _onChangeDate() {
@@ -159,8 +144,6 @@ export class EventEdit extends EventComponent {
         offer.title = offer.name;
         delete offer.name;
       });
-      console.warn(newOffers);
-      console.warn(this._offers);
 
       this._element.querySelector(`.travel-way__label`).innerHTML = this._icon;
       this._element.querySelector(`.point__destination-label`).innerHTML = this._title;
@@ -231,7 +214,7 @@ export class EventEdit extends EventComponent {
     return offerTemplates.join(``);
   }
 
-  _renderPicturesList(urls) {
+  _renderPicturesList() {
     const descriptions = [];
     this._picture.forEach((url) => {
       descriptions.push(`
@@ -316,7 +299,7 @@ export class EventEdit extends EventComponent {
       
             <div class="point__buttons">
               <button class="point__button point__button--save" type="submit">Save</button>
-              <button class="point__button" type="reset">Delete</button>
+              <button class="point__button point__button--delete" type="reset">Delete</button>
             </div>
       
             <div class="paint__favorite-wrap">
@@ -388,5 +371,20 @@ export class EventEdit extends EventComponent {
     this._time = data.time;
     this._price = data.price;
     this._offers = data.offers;
+    this._isFavorite = data.isFavorite;
+  }
+
+  shake() {
+    const ANIMATION_TIMEOUT = 600;
+    const RED_BORDER_TIMEOUT = 1200;
+    this._element.setAttribute(`style`, `animation: shake ${ANIMATION_TIMEOUT / 1000}s; border:4px solid red;`);
+
+    setTimeout(() => {
+      this._element.style.animation = ``;
+    }, ANIMATION_TIMEOUT);
+
+    setTimeout(() => {
+      this._element.style = ``;
+    }, RED_BORDER_TIMEOUT);
   }
 }

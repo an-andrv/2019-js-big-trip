@@ -75,3 +75,7 @@ export const checkStatus = (response) => {
 export const toJSON = (response) => {
   return response.json();
 };
+
+export const changeServiceMessage = (element, message) => {
+  element.innerHTML = message;
+};

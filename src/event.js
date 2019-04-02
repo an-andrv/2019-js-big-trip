@@ -4,7 +4,7 @@ import moment from 'moment';
 export class Event extends EventComponent {
   constructor(data) {
     super();
-    console.log(data);
+    // console.log(data);
     this._icon = data.icon;
     this._title = data.title;
     this._destination = data.destination;
@@ -12,9 +12,6 @@ export class Event extends EventComponent {
     this._price = data.price;
     this._offers = data.offers;
 
-    this._state = {
-      // Состояние компонента
-    };
     this._onEdit = null;
     this._onEditButtonClick = this._onEditButtonClick.bind(this);
   }
@@ -72,7 +69,7 @@ export class Event extends EventComponent {
   }
 
   update(data) {
-    this._mapElement = data.mapElement;
+    // console.log(data);
     this._icon = data.icon;
     this._title = data.title;
     this._destination = data.destination;
