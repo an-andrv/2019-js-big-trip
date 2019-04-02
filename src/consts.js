@@ -5,8 +5,8 @@ export const Methods = {
   DELETE: `DELETE`
 };
 
-export const SERVER_ADDRESS = `https://es8-demo-srv.appspot.com/big-trip/`;
-export const AUTHORIZATION = `Basic er883jdzbdw13`;
+export const SERVER_ADDRESS = `https://es8-demo-srv.appspot.com/big-trip`;
+export const AUTHORIZATION = `Basic er883jdzbdw13722`;
 
 export const pointsList = {
   'taxi': {

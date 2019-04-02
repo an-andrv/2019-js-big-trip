@@ -3,6 +3,7 @@ import {pointsList} from './consts';
 import flatpickr from 'flatpickr';
 
 import moment from 'moment';
+import _ from 'lodash';
 
 export class EventEdit extends EventComponent {
   constructor(data, offersData, destinationsData) {
@@ -89,19 +90,28 @@ export class EventEdit extends EventComponent {
       entry.title = pointsList[this._type].title;
     }
 
-    const choosenOffersData = this._offersData.find((offerData) => offerData.type === entry.type);
+    const choosenOffersData = this._offersData.find((offerData) => offerData.type === entry.type).offers;
+    console.warn(choosenOffersData);
     const choosenOffers = [];
-    entry.offers.forEach((entryOffer) => {
-      choosenOffers.push(choosenOffersData.offers.find((offer) => {
+
+    entry.offers.forEach((entryOffer) => { // ["Order a breakfast", "Order a breakfast"]
+      choosenOffers.push(choosenOffersData.find((offer) => {
         return offer.name === entryOffer;
       }));
     });
-    entry.offers = choosenOffers;
+    console.warn(choosenOffers);
+
+    entry.offers = _.cloneDeep(choosenOffers);
+    console.warn(entry.offers);
+
     entry.offers.forEach((offer) => {
       offer.accepted = true;
       offer.title = offer.name;
       delete offer.name;
     });
+    console.warn(entry.offers);
+    console.warn(this._offersData);
+
 
     return entry;
   }
@@ -143,12 +153,14 @@ export class EventEdit extends EventComponent {
       this._title = pointsList[choosenValue].title;
 
       let newOffers = this._offersData.find((offer) => offer.type === this._type).offers;
-      newOffers.forEach((offer) => {
+      this._offers = _.cloneDeep(newOffers);
+      this._offers.forEach((offer) => {
         offer.accepted = false;
         offer.title = offer.name;
         delete offer.name;
       });
-      this._offers = newOffers;
+      console.warn(newOffers);
+      console.warn(this._offers);
 
       this._element.querySelector(`.travel-way__label`).innerHTML = this._icon;
       this._element.querySelector(`.point__destination-label`).innerHTML = this._title;
@@ -191,30 +203,30 @@ export class EventEdit extends EventComponent {
 
   _renderOffers() {
     const offerTemplates = [];
-    const offersList = this._offersData.find((offer) => offer.type === this._type);
-
-    offersList.offers.forEach((offer, index) => {
-      offerTemplates.push(`
-        <input 
-          class="point__offers-input visually-hidden"
-          type="checkbox"
-          id="offer-${index}"
-          name="offer"
-          value="${offer.name || offer.title}"
-          ${this._offers.find((el) => el.title === offer.name && el.accepted === true) ? `checked` : ``}
-        >
-        <label
-          for="offer-${index}"
-          class="point__offers-label"
-        ><span class="point__offer-service">
-          ${offer.name || offer.title}
-          </span> + €
-          <span class="point__offer-price">
-            ${offer.price}
-          </span>
-        </label>
-      `);
-    });
+    if (this._offers.length > 0) {
+      this._offers.forEach((offer, index) => {
+        offerTemplates.push(`
+          <input 
+            class="point__offers-input visually-hidden"
+            type="checkbox"
+            id="offer-${index}"
+            name="offer"
+            value="${offer.title}"
+            ${offer.accepted ? `checked` : ``}
+          >
+          <label
+            for="offer-${index}"
+            class="point__offers-label"
+          ><span class="point__offer-service">
+            ${offer.title}
+            </span> + €
+            <span class="point__offer-price">
+              ${offer.price}
+            </span>
+          </label>
+        `);
+      });
+    }
 
     return offerTemplates.join(``);
   }

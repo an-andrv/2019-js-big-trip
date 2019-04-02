@@ -39,7 +39,7 @@ export class PointAdapter {
     console.warn(this.picture);
     console.warn(this.offers);
     return {
-      'id': this.id,//
+      'id': this.id.toString(),//
       'type': this.type,
       'destination': {
         name: this.destination,
@@ -48,7 +48,7 @@ export class PointAdapter {
       },
       'date_from': this.time.from,//
       'date_to': this.time.to,//
-      'base_price': this.price,//
+      'base_price': +this.price,//
       'offers': this.offers, //[{accepted: price: title: }]
       'is_favorite': this.isFavorite,//
     };
