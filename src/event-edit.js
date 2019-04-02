@@ -191,39 +191,30 @@ export class EventEdit extends EventComponent {
 
   _renderOffers() {
     const offerTemplates = [];
-    console.error(this._offersData);
-    console.error(this._offers);
+    const offersList = this._offersData.find((offer) => offer.type === this._type);
 
-    this._offers.forEach((offer, index) => {
+    offersList.offers.forEach((offer, index) => {
       offerTemplates.push(`
-        <input class="point__offers-input visually-hidden" type="checkbox" id="offer-${index}" name="offer" value="${offer.title}" ${ offer.accepted ? `checked` : ``}>
-        <label for="offer-${index}" class="point__offers-label">
-          <span class="point__offer-service">${offer.title}</span> + €<span class="point__offer-price">${offer.price}</span>
+        <input 
+          class="point__offers-input visually-hidden"
+          type="checkbox"
+          id="offer-${index}"
+          name="offer"
+          value="${offer.name || offer.title}"
+          ${this._offers.find((el) => el.title === offer.name && el.accepted === true) ? `checked` : ``}
+        >
+        <label
+          for="offer-${index}"
+          class="point__offers-label"
+        ><span class="point__offer-service">
+          ${offer.name || offer.title}
+          </span> + €
+          <span class="point__offer-price">
+            ${offer.price}
+          </span>
         </label>
       `);
     });
-    console.error(offerTemplates);
-
-    const offersList = this._offersData.find((offerData) => offerData.type === this._type);
-    
-    offersList.offers.forEach((offerData, index) => {
-      this._offers.forEach((offer) => {
-        console.warn(`curr`, offer.title);
-        console.warn(`data`, offerData.name);
-        console.warn(offer.title !== offerData.name);
-        if (offer.title !== offerData.name) {
-        console.warn(`ВХОД`);
-          offerTemplates.push(`
-            <input class="point__offers-input visually-hidden" type="checkbox" id="offer-${index}" name="offer" value="${offerData.name}">
-            <label for="offer-${index}" class="point__offers-label">
-              <span class="point__offer-service">${offerData.name}</span> + €<span class="point__offer-price">${offerData.price}</span>
-            </label>
-          `);
-        }
-      });
-    });
-
-    console.error(offerTemplates);
 
     return offerTemplates.join(``);
   }

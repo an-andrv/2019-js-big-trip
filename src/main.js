@@ -64,21 +64,21 @@ const renderEvent = (dist, event) => {
   };
 
   editEventComponent.onSubmit = (newData) => {
-      event.id = newData.id;
-      event.icon = newData.icon;
-      event.title = newData.title;
-      event.destination = newData.destination;
-      event.time.from = newData.time.from;
-      event.time.to = newData.time.to;
-      event.price = newData.price;
-      event.offers = newData.offers;
+    event.id = newData.id;
+    event.icon = newData.icon;
+    event.title = newData.title;
+    event.destination = newData.destination;
+    event.time.from = newData.time.from;
+    event.time.to = newData.time.to;
+    event.price = newData.price;
+    event.offers = newData.offers;
 
-    restService.updateTask({id: event.id, data: event.toRAW()})
+    restService.updatePoint({id: event.id, data: event.toRAW()})
       .then((newEvent) => {
-        eventComponent.update(newEvent),
-        eventComponent.render(),
-        dist.replaceChild(eventComponent.element, editEventComponent.element),
-        editEventComponent.unrender()
+        eventComponent.update(newEvent);
+        eventComponent.render();
+        dist.replaceChild(eventComponent.element, editEventComponent.element);
+        editEventComponent.unrender();
       });
 
   };
@@ -89,7 +89,7 @@ const renderEvent = (dist, event) => {
     dist.removeChild(editEventComponent.element);
     editEventComponent.unrender();
   };
-  
+
 };
 
 const renderTripDay = (points, dist) => {
@@ -108,7 +108,7 @@ const renderTripDay = (points, dist) => {
     if (currentMonth !== month || currentDay !== day) {
       tripDayComponent = new TripDay(day, month);
       dist.appendChild(tripDayComponent.render());
-      tripDay = dist.querySelector(`#day-${day}-${month}`); // // trip-day-${moment(date).format(`DD-MM-YYYY`)}__items
+      tripDay = dist.querySelector(`#day-${day}-${month}`); // trip-day-${moment(date).format(`DD-MM-YYYY`)}__items
       currentMonth = month;
       currentDay = day;
     }

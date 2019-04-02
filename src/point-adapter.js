@@ -1,6 +1,6 @@
 import {pointsList} from './consts';
 
-export class Adapter {
+export class PointAdapter {
   constructor(data) {
     this.id = +data[`id`] || 0;
     this.type = data[`type`] || ``;
@@ -23,18 +23,18 @@ export class Adapter {
 
   toRAW() {
     console.warn({
-      'id': this.id,//
+      'id': this.id, //
       'type': this.type,
       'destination': {
         name: this.destination,
         description: this.description,
         pictures: this.picture // [{description: , src: }]
       },
-      'date_from': this.time.from,//
-      'date_to': this.time.to,//
-      'base_price': this.price,//
-      'offers': this.offers, //[{accepted: price: title: }]
-      'is_favorite': this.isFavorite,//
+      'date_from': this.time.from, //
+      'date_to': this.time.to, //
+      'base_price': this.price, //
+      'offers': this.offers, // [{accepted: price: title: }]
+      'is_favorite': this.isFavorite, //
     });
     console.warn(this.picture);
     console.warn(this.offers);
@@ -55,11 +55,11 @@ export class Adapter {
   }
 
   static parsePoint(data) {
-    return new Adapter(data);
+    return new PointAdapter(data);
   }
 
   static parsePoints(data) {
-    return data.map(Adapter.parsePoint);
+    return data.map(PointAdapter.parsePoint);
   }
 
 }
