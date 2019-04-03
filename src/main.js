@@ -6,16 +6,12 @@ import {RestService} from './rest-service';
 import {ChartParam} from './chartParam';
 
 import {filterDays, changeServiceMessage, getTimeDifference} from './utils';
-import {SERVER_ADDRESS, AUTHORIZATION, SERVICE_MESSAGE_CONTAINER, Message} from './consts';
+import * as consts from './consts';
 
 import moment from 'moment';
 import Chart from 'chart.js';
 
-const filterNames = [`everything`, `future`, `past`];
-const filtersSection = document.querySelector(`.trip-filter`);
-const tripPointsContainer = document.querySelector(`.trip-points`);
-
-const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AUTHORIZATION});
+const restService = new RestService({endPoint: consts.SERVER_ADDRESS, authorization: consts.AUTHORIZATION});
 
 // console.log(`getOffers :: `, restService.getPoints()); // 6
 // console.log(`getOffers :: `, restService.getOffers()); // 6
@@ -38,21 +34,21 @@ handleServerData
     destinationsData = data[0];
     offersData = data[1];
     daysData = data[2];
-    renderTripDay(daysData, tripPointsContainer);
+    renderTripDay(daysData, consts.TRIP_DAY_CONTAINER);
     renderCharts(daysData);
   })
   .catch(() => {
-    changeServiceMessage(SERVICE_MESSAGE_CONTAINER, Message.ERROR_MESSAGE);
+    changeServiceMessage(consts.SERVICE_MESSAGE_CONTAINER, consts.Message.ERROR_MESSAGE);
   });
 
-filterNames.forEach((name) => {
+consts.FILTER_NAMES.forEach((name) => {
   const filterComponent = new Filter(name);
-  filtersSection.appendChild(filterComponent.render());
+  consts.FILTERS_CONTAINER.appendChild(filterComponent.render());
 
   filterComponent.onFilter = (filterName) => {
     const filteredDaysData = filterDays(daysData, filterName);
-    tripPointsContainer.innerHTML = ``;
-    renderTripDay(filteredDaysData, tripPointsContainer);
+    consts.TRIP_DAY_CONTAINER.innerHTML = ``;
+    renderTripDay(filteredDaysData, consts.TRIP_DAY_CONTAINER);
   };
 });
 
@@ -96,7 +92,7 @@ const renderEvent = (dist, event) => {
     const saveButton = editEventComponent.element.querySelector(`.point__button--save`);
 
     blockFormEdit();
-    changeServiceMessage(saveButton, Message.SAVING_MESSAGE);
+    changeServiceMessage(saveButton, consts.Message.SAVING_MESSAGE);
 
     restService.updatePoint({id: event.id, data: event.toRAW()})
       .then((newEvent) => {
@@ -110,7 +106,7 @@ const renderEvent = (dist, event) => {
       .catch(() => {
         unblockFormEdit();
         editEventComponent.shake();
-        changeServiceMessage(saveButton, Message.SAVE_MESSAGE);
+        changeServiceMessage(saveButton, consts.Message.SAVE_MESSAGE);
       });
 
   };
@@ -120,7 +116,7 @@ const renderEvent = (dist, event) => {
     const deleteButton = editEventComponent.element.querySelector(`.point__button--delete`);
 
     blockFormEdit();
-    changeServiceMessage(deleteButton, Message.DELETING_MESSAGE);
+    changeServiceMessage(deleteButton, consts.Message.DELETING_MESSAGE);
 
     restService.deletePoint({id})
       .then(() => {
@@ -132,7 +128,7 @@ const renderEvent = (dist, event) => {
       .catch(() => {
         unblockFormEdit();
         editEventComponent.shake();
-        changeServiceMessage(deleteButton, Message.DELETE_MESSAGE);
+        changeServiceMessage(deleteButton, consts.Message.DELETE_MESSAGE);
       });
   };
 
@@ -155,7 +151,7 @@ const renderTripDay = (points, dist) => {
     if (currentMonth !== month || currentDay !== day) {
       tripDayComponent = new TripDay(day, month);
       dist.appendChild(tripDayComponent.render());
-      tripDay = dist.querySelector(`#day-${day}-${month}`); // trip-day-${moment(date).format(`DD-MM-YYYY`)}__items
+      tripDay = dist.querySelector(`#day-${day}-${month}`);
       currentMonth = month;
       currentDay = day;
     }
@@ -164,27 +160,21 @@ const renderTripDay = (points, dist) => {
   }
 };
 
-const mainContainer = document.querySelector(`.main`);
-const statisticContainer = document.querySelector(`.statistic`);
 
-document.querySelector(`.view-switch`).addEventListener(`click`, (evt) => {
+consts.VIEW_SWICTHER.addEventListener(`click`, (evt) => {
   const choosenSwicth = evt.target.innerHTML.toLowerCase();
   switch (choosenSwicth) {
     case `stats`:
-      mainContainer.classList.add(`visually-hidden`);
-      statisticContainer.classList.remove(`visually-hidden`);
+      consts.MAIN_CONTAINER.classList.add(`visually-hidden`);
+      consts.STATISTICS_CONTAINER.classList.remove(`visually-hidden`);
       break;
 
     case `table`:
-      mainContainer.classList.remove(`visually-hidden`);
-      statisticContainer.classList.add(`visually-hidden`);
+      consts.MAIN_CONTAINER.classList.remove(`visually-hidden`);
+      consts.STATISTICS_CONTAINER.classList.add(`visually-hidden`);
       break;
   }
 });
-
-const moneyCtx = document.querySelector(`.statistic__money`).getContext(`2d`);
-const transportCtx = document.querySelector(`.statistic__transport`).getContext(`2d`);
-const timeSpendCtx = document.querySelector(`.statistic__time-spend`).getContext(`2d`);
 
 const moneyData = new Map();
 const transportData = new Map();
@@ -230,9 +220,9 @@ const renderCharts = (data) => {
     }
   });
 
-  moneyChart = new Chart(moneyCtx, new ChartParam(`MONEY`, moneyData).params);
-  transportChart = new Chart(transportCtx, new ChartParam(`TRANSPORT`, transportData).params);
-  timeChart = new Chart(timeSpendCtx, new ChartParam(`TIME`, timeSpendData).params);
+  moneyChart = new Chart(consts.MONEY_STATISTICS_CONTAINER, new ChartParam(`MONEY`, moneyData).params);
+  transportChart = new Chart(consts.TRANSPORT_STATISTICS_CONTAINER, new ChartParam(`TRANSPORT`, transportData).params);
+  timeChart = new Chart(consts.TIME_STATISTICS_CONTAINER, new ChartParam(`TIME`, timeSpendData).params);
 
 };
 

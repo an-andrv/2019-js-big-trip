@@ -1,11 +1,11 @@
-import {pointsList} from './consts';
+import {POINTS_LIST} from './consts';
 
 export class PointAdapter {
   constructor(data) {
     this.id = +data[`id`] || 0;
     this.type = data[`type`] || ``;
-    this.icon = pointsList[this.type].icon || ``;
-    this.title = pointsList[this.type].title || ``;
+    this.icon = POINTS_LIST[this.type].icon || ``;
+    this.title = POINTS_LIST[this.type].title || ``;
     this.destination = data[`destination`].name || ``;
     this.picture = data[`destination`].pictures || [];
     this.description = data[`destination`].description || ``;

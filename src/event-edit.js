@@ -1,5 +1,5 @@
 import {EventComponent} from './event-component';
-import {pointsList} from './consts';
+import {POINTS_LIST} from './consts';
 import flatpickr from 'flatpickr';
 
 import moment from 'moment';
@@ -38,8 +38,8 @@ export class EventEdit extends EventComponent {
     return {
       travelWay: (value) => {
         target.type = value;
-        target.icon = pointsList[value].icon;
-        target.title = pointsList[value].title;
+        target.icon = POINTS_LIST[value].icon;
+        target.title = POINTS_LIST[value].title;
       },
       destination: (value) => {
         target.destination = value;
@@ -90,8 +90,8 @@ export class EventEdit extends EventComponent {
 
     if (!entry.type && !entry.icon && !entry.title) {
       entry.type = this._type;
-      entry.icon = pointsList[this._type].icon;
-      entry.title = pointsList[this._type].title;
+      entry.icon = POINTS_LIST[this._type].icon;
+      entry.title = POINTS_LIST[this._type].title;
     }
 
     const updateOffers = _.cloneDeep(this._offers);
@@ -134,8 +134,8 @@ export class EventEdit extends EventComponent {
     if (choosenValue && choosenValue !== `on` && this._offersData.find((offer) => offer.type === choosenValue)) {
 
       this._type = choosenValue;
-      this._icon = pointsList[choosenValue].icon;
-      this._title = pointsList[choosenValue].title;
+      this._icon = POINTS_LIST[choosenValue].icon;
+      this._title = POINTS_LIST[choosenValue].title;
 
       let newOffers = this._offersData.find((offer) => offer.type === this._type).offers;
       this._offers = _.cloneDeep(newOffers);
