@@ -1,10 +1,10 @@
 import {EventComponent} from './event-component';
-import moment from 'moment';
 
 export class TripDay extends EventComponent {
-  constructor(date) {
+  constructor(day, month) {
     super();
-    this._date = date;
+    this._day = day;
+    this._month = month;
   }
 
   get template() {
@@ -13,11 +13,11 @@ export class TripDay extends EventComponent {
         <article class="trip-day__info">
           <span>
             <span class="trip-day__caption">Day</span>
-            <p class="trip-day__number">1</p>
-            <h2 class="trip-day__title">${moment(this._date).format(`MMM D`)}</h2>
+            <p class="trip-day__number">${this._day}</p>
+            <h2 class="trip-day__title">${this._month} ${this._day}</h2>
           </span>
         </article>
-        <div class="trip-day__items" id="day-${moment(this._date).format(`DD-MM-YYYY`)}">
+        <div class="trip-day__items" id="day-${this._day}-${this._month}">
         </div>
       </section>
     `.trim();
