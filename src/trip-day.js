@@ -1,6 +1,6 @@
-import {EventComponent} from './event-component';
+import {Component} from './component';
 
-export class TripDay extends EventComponent {
+export class TripDay extends Component {
   constructor(day, month) {
     super();
     this._day = day;

@@ -13,216 +13,48 @@ export class EventEdit extends EventComponent {
     this._type = data.type;
     this._icon = data.icon;
     this._title = data.title;
-    this._picture = data.picture; // массив объектов
+    this._picture = data.picture;
     this._description = data.description;
-    this._time = data.time; // from to
+    this._time = data.time;
     this._price = data.price;
     this._destination = data.destination;
-    this._offers = data.offers; // массив
+    this._offers = data.offers;
     this._offersData = offersData;
     this._destinationsData = destinationsData;
     this._isFavorite = data.isFavorite;
-
-    // this._isDeleted = data.isDeleted;
 
     this._onSubmit = null;
     this._onDelete = null;
 
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onDeleteButtonClick = this._onDeleteButtonClick.bind(this);
-    this._onChangeTravelWay = this._onChangeTravelWay.bind(this);
-    this._onChangeDestination = this._onChangeDestination.bind(this);
+    this._onTravelWayChange = this._onTravelWayChange.bind(this);
+    this._onDestinationChange = this._onDestinationChange.bind(this);
   }
 
-  static createMapper(target) {
-    return {
-      travelWay: (value) => {
-        target.type = value;
-        target.icon = POINTS_LIST[value].icon;
-        target.title = POINTS_LIST[value].title;
-      },
-      destination: (value) => {
-        target.destination = value;
-      },
-      timeFrom: (value) => {
-        target.time.from = value;
-      },
-      timeTo: (value) => {
-        target.time.to = value;
-      },
-      price: (value) => {
-        target.price = value;
-      },
-      offer: (value) => target.offers.push(value),
-      favorite: (value) => {
-        target.isFavorite = value;
-      },
-    };
+  update(data) {
+    this._type = data.type;
+    this._icon = data.icon;
+    this._title = data.title;
+    this._destination = data.destination;
+    this._time = data.time;
+    this._price = data.price;
+    this._offers = data.offers;
+    this._isFavorite = data.isFavorite;
   }
 
-  _processForm(formData) {
-    const entry = {
-      id: this._id,
-      type: ``,
-      icon: ``,
-      title: ``,
-      destination: ``,
-      time: {
-        from: ``,
-        to: ``,
-      },
-      price: ``,
-      offers: [],
-      isFavorite: ``
-    };
+  shake() {
+    const ANIMATION_TIMEOUT = 600;
+    const RED_BORDER_TIMEOUT = 1200;
+    this._element.setAttribute(`style`, `animation: shake ${ANIMATION_TIMEOUT / 1000}s; border:4px solid red;`);
 
-    const eventEditMapper = EventEdit.createMapper(entry);
+    setTimeout(() => {
+      this._element.style.animation = ``;
+    }, ANIMATION_TIMEOUT);
 
-    for (const pair of formData.entries()) {
-      const [property, value] = pair;
-      if (eventEditMapper[property]) {
-        eventEditMapper[property](value);
-      }
-    }
-
-    entry.time.from = new Date(moment(this._time.from).format(`YYYY-MM-DD`) + `T` + entry.time.from).getTime();
-    entry.time.to = new Date(moment(this._time.to).format(`YYYY-MM-DD`) + `T` + entry.time.to).getTime();
-
-    if (!entry.type && !entry.icon && !entry.title) {
-      entry.type = this._type;
-      entry.icon = POINTS_LIST[this._type].icon;
-      entry.title = POINTS_LIST[this._type].title;
-    }
-
-    const updateOffers = _.cloneDeep(this._offers);
-    updateOffers.forEach((updateOffer) => {
-      updateOffer.accepted = entry.offers.includes(updateOffer.title);
-    });
-
-    entry.offers = updateOffers;
-
-    return entry;
-  }
-
-  _partialUpdate() {
-    this._element.innerHTML = this.template;
-  }
-
-  _onSubmitButtonClick(evt) {
-    evt.preventDefault();
-    const formData = new FormData(this._element.querySelector(`.trip-form`));
-
-    const newData = this._processForm(formData);
-    if (typeof this._onSubmit === `function`) {
-      this._onSubmit(newData);
-    }
-    this.update(newData);
-  }
-
-  _onDeleteButtonClick() {
-    return typeof this._onDelete === `function` && this._onDelete(this._id);
-  }
-
-  _onChangeDate() {
-    this.unbind();
-    this._partialUpdate();
-    this.bind();
-  }
-
-  _onChangeTravelWay(evt) {
-    const choosenValue = evt.target.value;
-    if (choosenValue && choosenValue !== `on` && this._offersData.find((offer) => offer.type === choosenValue)) {
-
-      this._type = choosenValue;
-      this._icon = POINTS_LIST[choosenValue].icon;
-      this._title = POINTS_LIST[choosenValue].title;
-
-      let newOffers = this._offersData.find((offer) => offer.type === this._type).offers;
-      this._offers = _.cloneDeep(newOffers);
-      this._offers.forEach((offer) => {
-        offer.accepted = false;
-        offer.title = offer.name;
-        delete offer.name;
-      });
-
-      this._element.querySelector(`.travel-way__label`).innerHTML = this._icon;
-      this._element.querySelector(`.point__destination-label`).innerHTML = this._title;
-      this._element.querySelector(`.point__offers-wrap`).innerHTML = this._renderOffers();
-      this._element.querySelector(`.travel-way__toggle`).checked = false;
-    }
-  }
-
-  _onChangeDestination(evt) {
-    const choosenDestination = this._destinationsData.find((descriptionData) => descriptionData.name === evt.target.value);
-
-    if (choosenDestination) {
-      this._destination = choosenDestination.name;
-      this._description = choosenDestination.description;
-      this._picture = choosenDestination.pictures;
-
-      this._element.querySelector(`.point__destination-text`).innerHTML = this._description;
-      this._element.querySelector(`.point__destination-images`).innerHTML = this._renderPicturesList(this._picture);
-    }
-  }
-
-  set onSubmit(value) {
-    this._onSubmit = value;
-  }
-
-  set onDelete(value) {
-    this._onDelete = value;
-  }
-
-  _renderDestinationDatalist() {
-    const destinations = [];
-    this._destinationsData.forEach((destination) => {
-      destinations.push(`
-        <option value="${destination.name}"></option>
-      `);
-    });
-
-    return destinations.join(``);
-  }
-
-  _renderOffers() {
-    const offerTemplates = [];
-    if (this._offers.length > 0) {
-      this._offers.forEach((offer, index) => {
-        offerTemplates.push(`
-          <input 
-            class="point__offers-input visually-hidden"
-            type="checkbox"
-            id="offer-${index}"
-            name="offer"
-            value="${offer.title}"
-            ${offer.accepted ? `checked` : ``}
-          >
-          <label
-            for="offer-${index}"
-            class="point__offers-label"
-          ><span class="point__offer-service">
-            ${offer.title}
-            </span> + €
-            <span class="point__offer-price">
-              ${offer.price}
-            </span>
-          </label>
-        `);
-      });
-    }
-
-    return offerTemplates.join(``);
-  }
-
-  _renderPicturesList() {
-    const descriptions = [];
-    this._picture.forEach((url) => {
-      descriptions.push(`
-        <img src="${url.src}" alt="${url.description}" class="point__destination-image">
-      `);
-    });
-
-    return descriptions.join(``);
+    setTimeout(() => {
+      this._element.style = ``;
+    }, RED_BORDER_TIMEOUT);
   }
 
   get template() {
@@ -331,17 +163,126 @@ export class EventEdit extends EventComponent {
     `.trim();
   }
 
+  set onSubmit(value) {
+    this._onSubmit = value;
+  }
+
+  set onDelete(value) {
+    this._onDelete = value;
+  }
+
+  _partialUpdate() {
+    this._element.innerHTML = this.template;
+  }
+
+  _processForm(formData) {
+    const entry = {
+      id: this._id,
+      type: ``,
+      icon: ``,
+      title: ``,
+      destination: ``,
+      time: {
+        from: ``,
+        to: ``,
+      },
+      price: ``,
+      offers: [],
+      isFavorite: ``
+    };
+
+    const eventEditMapper = EventEdit.createMapper(entry);
+
+    for (const pair of formData.entries()) {
+      const [property, value] = pair;
+      if (eventEditMapper[property]) {
+        eventEditMapper[property](value);
+      }
+    }
+
+    entry.time.from = new Date(moment(this._time.from).format(`YYYY-MM-DD`) + `T` + entry.time.from).getTime();
+    entry.time.to = new Date(moment(this._time.to).format(`YYYY-MM-DD`) + `T` + entry.time.to).getTime();
+
+    if (!entry.type && !entry.icon && !entry.title) {
+      entry.type = this._type;
+      entry.icon = POINTS_LIST[this._type].icon;
+      entry.title = POINTS_LIST[this._type].title;
+    }
+
+    const updateOffers = _.cloneDeep(this._offers);
+    for (const updateOffer of updateOffers) {
+      updateOffer.accepted = entry.offers.includes(updateOffer.title);
+    }
+
+    entry.offers = updateOffers;
+
+    return entry;
+  }
+
+  _renderDestinationDatalist() {
+    const destinations = [];
+    for (const destination of this._destinationsData) {
+      destinations.push(`
+        <option value="${destination.name}"></option>
+      `);
+    }
+
+    return destinations.join(``);
+  }
+
+  _renderOffers() {
+    const offerTemplates = [];
+    if (this._offers.length > 0) {
+
+      for (const [index, offer] of this._offers.entries()) {
+        offerTemplates.push(`
+          <input 
+            class="point__offers-input visually-hidden"
+            type="checkbox"
+            id="offer-${index}"
+            name="offer"
+            value="${offer.title}"
+            ${offer.accepted ? `checked` : ``}
+          >
+          <label
+            for="offer-${index}"
+            class="point__offers-label"
+          ><span class="point__offer-service">
+            ${offer.title}
+            </span> + €
+            <span class="point__offer-price">
+              ${offer.price}
+            </span>
+          </label>
+        `);
+      }
+    }
+
+    return offerTemplates.join(``);
+  }
+
+  _renderPicturesList() {
+    const descriptions = [];
+    for (const url of this._picture) {
+      descriptions.push(`
+        <img src="${url.src}" alt="${url.description}" class="point__destination-image">
+      `);
+    }
+
+    return descriptions.join(``);
+  }
+
   bind() {
     this._element.querySelector(`.trip-form`)
       .addEventListener(`submit`, this._onSubmitButtonClick);
     this._element.querySelector(`.trip-form`)
       .addEventListener(`reset`, this._onDeleteButtonClick);
     this._element.querySelector(`.travel-way`)
-      .addEventListener(`change`, this._onChangeTravelWay);
+      .addEventListener(`change`, this._onTravelWayChange);
     this._element.querySelector(`.point__time`)
-      .addEventListener(`click`, this._onChangeColor);
+      .addEventListener(`click`, this._onColorChange);
     this._element.querySelector(`.point__destination-input`)
-      .addEventListener(`change`, this._onChangeDestination);
+      .addEventListener(`change`, this._onDestinationChange);
 
     // eslint-disable-next-line camelcase
     flatpickr(this._element.querySelector(`.point__time-from`), {enableTime: true, noCalendar: true, dateFormat: `H:i`, time_24hr: true});
@@ -356,35 +297,93 @@ export class EventEdit extends EventComponent {
     this._element.querySelector(`.trip-form`)
       .removeEventListener(`reset`, this._onDeleteButtonClick);
     this._element.querySelector(`.travel-way`)
-      .removeEventListener(`change`, this._onChangeTravelWay);
+      .removeEventListener(`change`, this._onTravelWayChange);
     this._element.querySelector(`.point__time`)
-      .removeEventListener(`click`, this._onChangeColor);
+      .removeEventListener(`click`, this._onColorChange);
     this._element.querySelector(`.point__destination-input`)
-      .removeEventListener(`change`, this._onChangeDestination);
+      .removeEventListener(`change`, this._onDestinationChange);
   }
 
-  update(data) {
-    this._type = data.type;
-    this._icon = data.icon;
-    this._title = data.title;
-    this._destination = data.destination;
-    this._time = data.time;
-    this._price = data.price;
-    this._offers = data.offers;
-    this._isFavorite = data.isFavorite;
+  _onSubmitButtonClick(evt) {
+    evt.preventDefault();
+    const formData = new FormData(this._element.querySelector(`.trip-form`));
+
+    const newData = this._processForm(formData);
+    if (typeof this._onSubmit === `function`) {
+      this._onSubmit(newData);
+    }
+    this.update(newData);
   }
 
-  shake() {
-    const ANIMATION_TIMEOUT = 600;
-    const RED_BORDER_TIMEOUT = 1200;
-    this._element.setAttribute(`style`, `animation: shake ${ANIMATION_TIMEOUT / 1000}s; border:4px solid red;`);
+  _onDeleteButtonClick() {
+    return typeof this._onDelete === `function` && this._onDelete(this._id);
+  }
 
-    setTimeout(() => {
-      this._element.style.animation = ``;
-    }, ANIMATION_TIMEOUT);
+  _onChangeDate() {
+    this.unbind();
+    this._partialUpdate();
+    this.bind();
+  }
 
-    setTimeout(() => {
-      this._element.style = ``;
-    }, RED_BORDER_TIMEOUT);
+  _onTravelWayChange(evt) {
+    const choosenValue = evt.target.value;
+    if (choosenValue && choosenValue !== `on` && this._offersData.find((offer) => offer.type === choosenValue)) {
+
+      this._type = choosenValue;
+      this._icon = POINTS_LIST[choosenValue].icon;
+      this._title = POINTS_LIST[choosenValue].title;
+
+      let newOffers = this._offersData.find((offer) => offer.type === this._type).offers;
+      this._offers = _.cloneDeep(newOffers);
+      for (const offer of this._offers) {
+        offer.accepted = false;
+        offer.title = offer.name;
+        delete offer.name;
+      }
+
+      this._element.querySelector(`.travel-way__label`).innerHTML = this._icon;
+      this._element.querySelector(`.point__destination-label`).innerHTML = this._title;
+      this._element.querySelector(`.point__offers-wrap`).innerHTML = this._renderOffers();
+      this._element.querySelector(`.travel-way__toggle`).checked = false;
+    }
+  }
+
+  _onDestinationChange(evt) {
+    const choosenDestination = this._destinationsData.find((descriptionData) => descriptionData.name === evt.target.value);
+
+    if (choosenDestination) {
+      this._destination = choosenDestination.name;
+      this._description = choosenDestination.description;
+      this._picture = choosenDestination.pictures;
+
+      this._element.querySelector(`.point__destination-text`).innerHTML = this._description;
+      this._element.querySelector(`.point__destination-images`).innerHTML = this._renderPicturesList(this._picture);
+    }
+  }
+
+  static createMapper(target) {
+    return {
+      travelWay: (value) => {
+        target.type = value;
+        target.icon = POINTS_LIST[value].icon;
+        target.title = POINTS_LIST[value].title;
+      },
+      destination: (value) => {
+        target.destination = value;
+      },
+      timeFrom: (value) => {
+        target.time.from = value;
+      },
+      timeTo: (value) => {
+        target.time.to = value;
+      },
+      price: (value) => {
+        target.price = value;
+      },
+      offer: (value) => target.offers.push(value),
+      favorite: (value) => {
+        target.isFavorite = value;
+      },
+    };
   }
 }
