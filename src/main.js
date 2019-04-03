@@ -2,12 +2,14 @@ import {Event} from './event';
 import {EventEdit} from './event-edit';
 import {TripDay} from './trip-day';
 import {Filter} from './filter';
-import moment from 'moment';
-import {moneyParams, transportParams, timeSpendParams} from './chart';
-import Chart from 'chart.js';
-import {getTimeDifferenceSumm, filterDays, changeServiceMessage} from './utils';
-import {SERVER_ADDRESS, AUTHORIZATION, SERVICE_MESSAGE_CONTAINER, Message} from './consts';
 import {RestService} from './rest-service';
+import {ChartParam} from './chartParam';
+
+import {filterDays, changeServiceMessage, getTimeDifference} from './utils';
+import {SERVER_ADDRESS, AUTHORIZATION, SERVICE_MESSAGE_CONTAINER, Message} from './consts';
+
+import moment from 'moment';
+import Chart from 'chart.js';
 
 const filterNames = [`everything`, `future`, `past`];
 const filtersSection = document.querySelector(`.trip-filter`);
@@ -15,9 +17,9 @@ const tripPointsContainer = document.querySelector(`.trip-points`);
 
 const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AUTHORIZATION});
 
-console.log(`getOffers :: `, restService.getPoints()); // 6
-console.log(`getOffers :: `, restService.getOffers()); // 6
-console.log(`getDestinations :: `, restService.getDestinations()); // 28
+// console.log(`getOffers :: `, restService.getPoints()); // 6
+// console.log(`getOffers :: `, restService.getOffers()); // 6
+// console.log(`getDestinations :: `, restService.getDestinations()); // 28
 
 let daysData = [];
 let destinationsData = [];
@@ -37,6 +39,7 @@ handleServerData
     offersData = data[1];
     daysData = data[2];
     renderTripDay(daysData, tripPointsContainer);
+    renderCharts(daysData);
   })
   .catch(() => {
     changeServiceMessage(SERVICE_MESSAGE_CONTAINER, Message.ERROR_MESSAGE);
@@ -102,6 +105,7 @@ const renderEvent = (dist, event) => {
         eventComponent.render();
         dist.replaceChild(eventComponent.element, editEventComponent.element);
         editEventComponent.unrender();
+        updateCharts();
       })
       .catch(() => {
         unblockFormEdit();
@@ -123,6 +127,7 @@ const renderEvent = (dist, event) => {
         unblockFormEdit();
         dist.removeChild(editEventComponent.element);
         editEventComponent.unrender();
+        updateCharts();
       })
       .catch(() => {
         unblockFormEdit();
@@ -161,9 +166,6 @@ const renderTripDay = (points, dist) => {
 
 const mainContainer = document.querySelector(`.main`);
 const statisticContainer = document.querySelector(`.statistic`);
-const moneyCtx = document.querySelector(`.statistic__money`);
-const transportCtx = document.querySelector(`.statistic__transport`);
-const timeSpendCtx = document.querySelector(`.statistic__time-spend`);
 
 document.querySelector(`.view-switch`).addEventListener(`click`, (evt) => {
   const choosenSwicth = evt.target.innerHTML.toLowerCase();
@@ -180,66 +182,63 @@ document.querySelector(`.view-switch`).addEventListener(`click`, (evt) => {
   }
 });
 
+const moneyCtx = document.querySelector(`.statistic__money`).getContext(`2d`);
+const transportCtx = document.querySelector(`.statistic__transport`).getContext(`2d`);
+const timeSpendCtx = document.querySelector(`.statistic__time-spend`).getContext(`2d`);
+
+const moneyData = new Map();
+const transportData = new Map();
+const timeSpendData = new Map();
+
+let moneyChart;
+let transportChart;
+let timeChart;
+
 const renderCharts = (data) => {
 
-  const moneyData = new Map();
-  const transportData = new Map();
-  const timeSpendData = new Map();
+  moneyData.clear();
+  transportData.clear();
+  timeSpendData.clear();
 
-  data.forEach((dayData) => {
-    dayData.data.forEach((event) => {
-      const key = `${event.icon} ${event.title.toUpperCase()}`;
-      if (moneyData.has(key)) {
-        const currentValue = moneyData.get(key);
-        moneyData.set(key, currentValue + event.price);
-      } else {
-        moneyData.set(key, event.price);
-      }
-    });
-  });
-
-  data.forEach((dayData) => {
-    dayData.data.forEach((event) => {
-      const key = `${event.icon} ${event.title.toUpperCase()}`;
-      if (transportData.has(key)) {
-        let currentValue = transportData.get(key);
-        transportData.set(key, ++currentValue);
-      } else {
-        transportData.set(key, 1);
-      }
-    });
-  });
-
-  data.forEach((dayData) => {
-    dayData.data.forEach((event) => {
-      const key = `${event.icon} ${event.title.toUpperCase()}`;
-      if (timeSpendData.has(key)) {
-        let currentValue = timeSpendData.get(key);
-        timeSpendData.set(key, currentValue + getTimeDifferenceSumm(event.time.duration));
-      } else {
-        timeSpendData.set(key, getTimeDifferenceSumm(event.time.duration));
-      }
-    });
-  });
-
-  const updateParams = (paramName, paramData) => {
-    for (let item of paramData) {
-      paramName.data.labels.push(item[0]);
-      paramName.data.datasets[0].data.push(item[1]);
+  data.forEach((event) => {
+    const key = `${event.icon} ${event.title.toUpperCase()}`;
+    if (moneyData.has(key)) {
+      const currentValue = moneyData.get(key);
+      moneyData.set(key, +currentValue + event.price);
+    } else {
+      moneyData.set(key, event.price);
     }
-  };
+  });
 
-  updateParams(moneyParams, moneyData);
-  updateParams(transportParams, transportData);
-  updateParams(timeSpendParams, timeSpendData);
+  data.forEach((event) => {
+    const key = `${event.icon} ${event.title.toUpperCase()}`;
+    if (transportData.has(key)) {
+      let currentValue = transportData.get(key);
+      transportData.set(key, ++currentValue);
+    } else {
+      transportData.set(key, 1);
+    }
+  });
+
+  data.forEach((event) => {
+    const key = `${event.icon} ${event.title.toUpperCase()}`;
+    if (timeSpendData.has(key)) {
+      let currentDifference = timeSpendData.get(key);
+      timeSpendData.set(key, currentDifference + getTimeDifference(event.time.from, event.time.to));
+    } else {
+      timeSpendData.set(key, getTimeDifference(event.time.from, event.time.to));
+    }
+  });
+
+  moneyChart = new Chart(moneyCtx, new ChartParam(`MONEY`, moneyData).params);
+  transportChart = new Chart(transportCtx, new ChartParam(`TRANSPORT`, transportData).params);
+  timeChart = new Chart(timeSpendCtx, new ChartParam(`TIME`, timeSpendData).params);
 
 };
 
-// renderCharts(daysData);
-
-// eslint-disable-next-line no-unused-vars
-const moneyChart = new Chart(moneyCtx, moneyParams);
-// eslint-disable-next-line no-unused-vars
-const transportChart = new Chart(transportCtx, transportParams);
-// eslint-disable-next-line no-unused-vars
-const timeSpendChart = new Chart(timeSpendCtx, timeSpendParams);
+const updateCharts = () => {
+  moneyChart.destroy();
+  transportChart.destroy();
+  timeChart.destroy();
+  renderCharts(daysData);
+};

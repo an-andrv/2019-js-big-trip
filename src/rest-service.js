@@ -36,7 +36,7 @@ export class RestService {
   }
 
   updatePoint({id, data}) {
-    console.warn(id, data);
+    // console.warn(id, data);
     return this._load({
       url: `points/${id}`,
       method: Methods.PUT,
@@ -57,7 +57,7 @@ export class RestService {
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
       .then(checkStatus)
       .catch((err) => {
-        console.error(`fetch error: ${err}`);
+        // console.error(`fetch error: ${err}`);
         throw err;
       });
   }
