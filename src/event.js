@@ -1,7 +1,7 @@
-import {EventComponent} from './event-component';
+import {Component} from './component';
 import moment from 'moment';
 
-export class Event extends EventComponent {
+export class Event extends Component {
   constructor(data) {
     super();
     // console.log(data);

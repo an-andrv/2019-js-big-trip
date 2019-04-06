@@ -1,11 +1,11 @@
-import {EventComponent} from './event-component';
+import {Component} from './component';
 import {POINTS_LIST} from './consts';
 import flatpickr from 'flatpickr';
 
 import moment from 'moment';
 import _ from 'lodash';
 
-export class EventEdit extends EventComponent {
+export class EventEdit extends Component {
   constructor(data, offersData, destinationsData) {
     super();
     // console.log(data);
