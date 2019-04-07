@@ -296,10 +296,8 @@ export class EventEdit extends Component {
       .addEventListener(`change`, this._onDestinationChange);
     document.addEventListener(`keydown`, this._onDocumentKeyDown);
 
-    // eslint-disable-next-line camelcase
-    flatpickr(this._element.querySelector(`.point__time-from`), {enableTime: true, noCalendar: true, dateFormat: `H:i`, time_24hr: true});
-    // eslint-disable-next-line camelcase
-    flatpickr(this._element.querySelector(`.point__time-to`), {enableTime: true, noCalendar: true, dateFormat: `H:i`, time_24hr: true});
+    flatpickr(this._element.querySelector(`.point__time-from`), {'enableTime': true, 'noCalendar': true, 'dateFormat': `H:i`, 'time_24hr': true});
+    flatpickr(this._element.querySelector(`.point__time-to`), {'enableTime': true, 'noCalendar': true, 'dateFormat': `H:i`, 'time_24hr': true});
     flatpickr(this._element.querySelector(`.point__input`), {});
 
   }
