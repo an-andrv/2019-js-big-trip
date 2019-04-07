@@ -6,7 +6,7 @@ export const Method = {
 };
 
 export const SERVER_ADDRESS = `https://es8-demo-srv.appspot.com/big-trip`;
-export const AUTHORIZATION = `Basic er883jdzbdw1372777`;
+export const AUTHORIZATION = `Basic er883jdzbdw13727777`;
 
 export const POINTS_LIST = {
   'taxi': {
@@ -52,6 +52,7 @@ export const POINTS_LIST = {
 };
 
 export const FILTER_NAMES = [`everything`, `future`, `past`];
+export const SORT_NAMES = [`price`, `time`, `event`];
 
 export const Message = {
   LOADING: `Loading route...`,

@@ -6,6 +6,7 @@ export class Filter extends Component {
     this._name = name;
 
     this._onFilter = null;
+    this._onFilterClick = this._onFilterClick.bind(this);
   }
 
   get template() {
@@ -23,7 +24,7 @@ export class Filter extends Component {
 
   bind() {
     this._element.querySelector(`.trip-filter__item`)
-      .addEventListener(`click`, this._onFilterClick.bind(this));
+      .addEventListener(`click`, this._onFilterClick);
   }
 
   _onFilterClick(evt) {

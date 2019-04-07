@@ -8,28 +8,35 @@ import _ from 'lodash';
 export class EventEdit extends Component {
   constructor(data, offersData, destinationsData) {
     super();
-    // console.log(data);
     this._id = data.id;
     this._type = data.type;
-    this._icon = data.icon;
-    this._title = data.title;
-    this._picture = data.picture;
+    this._icon = POINTS_LIST[this._type].icon || ``;
+    this._title = POINTS_LIST[this._type].title || ``;
     this._description = data.description;
     this._time = data.time;
     this._price = data.price;
-    this._destination = data.destination;
-    this._offers = data.offers;
+    this._isFavorite = data.isFavorite;
+
     this._offersData = offersData;
     this._destinationsData = destinationsData;
-    this._isFavorite = data.isFavorite;
+
+    this._destination = data.destination;
+    this._currentDestinationData = this._destinationsData.find((descriptionData) => descriptionData.name === this._destination);
+    this._description = data.description || this._currentDestinationData.description;
+    this._pictures = data.picture || this._currentDestinationData.pictures;
+
+    this._offers = data.offers || this._currentOfferData;
+    this._currentOfferData = this._offersData.find((offerData) => offerData.type === this._type);
 
     this._onSubmit = null;
     this._onDelete = null;
+    this._onKeyDown = null;
 
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onDeleteButtonClick = this._onDeleteButtonClick.bind(this);
     this._onTravelWayChange = this._onTravelWayChange.bind(this);
     this._onDestinationChange = this._onDestinationChange.bind(this);
+    this._onDocumentKeyDown = this._onDocumentKeyDown.bind(this);
   }
 
   update(data) {
@@ -64,7 +71,7 @@ export class EventEdit extends Component {
           <header class="point__header">
             <label class="point__date">
               choose day
-              <input class="point__input" type="text" placeholder="" name="day">
+              <input class="point__input" type="text" placeholder="${moment(new Date()).format(`YYYY-MM-DD`)}" name="day">
             </label>
       
             <div class="travel-way">
@@ -171,6 +178,10 @@ export class EventEdit extends Component {
     this._onDelete = value;
   }
 
+  set onKeyDown(value) {
+    this._onKeyDown = value;
+  }
+
   _partialUpdate() {
     this._element.innerHTML = this.template;
   }
@@ -178,6 +189,7 @@ export class EventEdit extends Component {
   _processForm(formData) {
     const entry = {
       id: this._id,
+      day: ``,
       type: ``,
       icon: ``,
       title: ``,
@@ -200,8 +212,8 @@ export class EventEdit extends Component {
       }
     }
 
-    entry.time.from = new Date(moment(this._time.from).format(`YYYY-MM-DD`) + `T` + entry.time.from).getTime();
-    entry.time.to = new Date(moment(this._time.to).format(`YYYY-MM-DD`) + `T` + entry.time.to).getTime();
+    entry.time.from = new Date((moment(entry.day).format(`YYYY-MM-DD`) || moment(this._time.from).format(`YYYY-MM-DD`)) + `T` + entry.time.from).getTime();
+    entry.time.to = new Date((moment(entry.day).format(`YYYY-MM-DD`) || moment(this._time.to).format(`YYYY-MM-DD`)) + `T` + entry.time.to).getTime();
 
     if (!entry.type && !entry.icon && !entry.title) {
       entry.type = this._type;
@@ -215,7 +227,6 @@ export class EventEdit extends Component {
     }
 
     entry.offers = updateOffers;
-
     return entry;
   }
 
@@ -263,7 +274,7 @@ export class EventEdit extends Component {
 
   _renderPicturesList() {
     const descriptions = [];
-    for (const url of this._picture) {
+    for (const url of this._pictures) {
       descriptions.push(`
         <img src="${url.src}" alt="${url.description}" class="point__destination-image">
       `);
@@ -283,11 +294,13 @@ export class EventEdit extends Component {
       .addEventListener(`click`, this._onColorChange);
     this._element.querySelector(`.point__destination-input`)
       .addEventListener(`change`, this._onDestinationChange);
+    document.addEventListener(`keydown`, this._onDocumentKeyDown);
 
     // eslint-disable-next-line camelcase
     flatpickr(this._element.querySelector(`.point__time-from`), {enableTime: true, noCalendar: true, dateFormat: `H:i`, time_24hr: true});
     // eslint-disable-next-line camelcase
     flatpickr(this._element.querySelector(`.point__time-to`), {enableTime: true, noCalendar: true, dateFormat: `H:i`, time_24hr: true});
+    flatpickr(this._element.querySelector(`.point__input`), {});
 
   }
 
@@ -302,13 +315,14 @@ export class EventEdit extends Component {
       .removeEventListener(`click`, this._onColorChange);
     this._element.querySelector(`.point__destination-input`)
       .removeEventListener(`change`, this._onDestinationChange);
+    document.removeEventListener(`keydown`, this._onDocumentKeyDown);
   }
 
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
     const formData = new FormData(this._element.querySelector(`.trip-form`));
-
     const newData = this._processForm(formData);
+
     if (typeof this._onSubmit === `function`) {
       this._onSubmit(newData);
     }
@@ -354,15 +368,22 @@ export class EventEdit extends Component {
     if (choosenDestination) {
       this._destination = choosenDestination.name;
       this._description = choosenDestination.description;
-      this._picture = choosenDestination.pictures;
+      this._pictures = choosenDestination.pictures;
 
       this._element.querySelector(`.point__destination-text`).innerHTML = this._description;
-      this._element.querySelector(`.point__destination-images`).innerHTML = this._renderPicturesList(this._picture);
+      this._element.querySelector(`.point__destination-images`).innerHTML = this._renderPicturesList(this._pictures);
     }
+  }
+
+  _onDocumentKeyDown(evt) {
+    return typeof this._onKeyDown === `function` && this._onKeyDown(evt.keyCode);
   }
 
   static createMapper(target) {
     return {
+      day: (value) => {
+        target.day = value;
+      },
       travelWay: (value) => {
         target.type = value;
         target.icon = POINTS_LIST[value].icon;
