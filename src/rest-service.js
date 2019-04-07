@@ -1,5 +1,5 @@
 import {checkStatus, toJSON} from './utils';
-import {Methods} from './consts';
+import {Method} from './consts';
 import {PointAdapter} from './point-adapter';
 
 export class RestService {
@@ -27,7 +27,7 @@ export class RestService {
   createPoint({point}) {
     return this._load({
       url: `points`,
-      method: Methods.POST,
+      method: Method.POST,
       body: JSON.stringify(point),
       headers: new Headers({'Content-Type': `application/json`})
     })
@@ -39,7 +39,7 @@ export class RestService {
     // console.warn(id, data);
     return this._load({
       url: `points/${id}`,
-      method: Methods.PUT,
+      method: Method.PUT,
       body: JSON.stringify(data),
       headers: new Headers({'Content-Type': `application/json`})
     })
@@ -48,10 +48,10 @@ export class RestService {
   }
 
   deletePoint({id}) {
-    return this._load({url: `points/${id}`, method: Methods.DELETE});
+    return this._load({url: `points/${id}`, method: Method.DELETE});
   }
 
-  _load({url, method = Methods.GET, body = null, headers = new Headers()}) {
+  _load({url, method = Method.GET, body = null, headers = new Headers()}) {
     headers.append(`Authorization`, this._authorization);
 
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})

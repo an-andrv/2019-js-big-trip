@@ -343,6 +343,8 @@ input[type=radio]:checked + .trip-sorting__item {
 }
 
 .trip-point__offer {
+  width: 340px;
+  text-align: left;
   background: none;
   border: 0;
   color: #199cfa;
@@ -396,7 +398,7 @@ input[type=radio]:checked + .trip-sorting__item {
 .point__date {
   display: none;
   font-size: 0;
-  width: 55px;
+  width: 100px;
   margin-right: 5px;
 }
 .point__input {
@@ -421,7 +423,7 @@ input[type=radio]:checked + .trip-sorting__item {
   position: relative;
   padding: 0 2px 6px;
   display: flex;
-  width: 235px;
+  width: 200px;
   margin-right: 5px;
   margin-top: 4px;
   border-bottom: 1px solid #0D8AE4;

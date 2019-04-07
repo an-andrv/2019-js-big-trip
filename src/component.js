@@ -1,8 +1,8 @@
 import {createElement} from "./utils";
 
-export class EventComponent {
+export class Component {
   constructor() {
-    if (new.target === EventComponent) {
+    if (new.target === Component) {
       throw new Error(`Can't instantiate Component, only concrete one.`);
     }
 

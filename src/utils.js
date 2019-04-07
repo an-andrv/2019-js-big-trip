@@ -27,6 +27,29 @@ export const filterDays = (days, filterName) => {
   return filteredDays;
 };
 
+export const sortDays = (days, sortName) => {
+  let sortingDays = [];
+
+  switch (sortName) {
+    case `event`:
+      sortingDays = days;
+      break;
+
+    case `time`:
+      sortingDays = days.slice().sort((a, b) => {
+        return a.time.duration - b.time.duration;
+      });
+      break;
+
+    case `price`:
+      sortingDays = days.slice().sort((a, b) => {
+        return a.price - b.price;
+      });
+      break;
+  }
+  return sortingDays;
+};
+
 export const checkStatus = (response) => {
   if (response.status >= 200 && response.status < 300) {
     return response;

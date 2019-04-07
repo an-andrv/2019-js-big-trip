@@ -1,4 +1,4 @@
-export const Methods = {
+export const Method = {
   GET: `GET`,
   POST: `POST`,
   PUT: `PUT`,
@@ -6,9 +6,9 @@ export const Methods = {
 };
 
 export const SERVER_ADDRESS = `https://es8-demo-srv.appspot.com/big-trip`;
-export const AUTHORIZATION = `Basic er883jdzbdw1372777`;
+export const AUTHORIZATION = `Basic er883jdzbdw13727777`;
 
-export const pointsList = {
+export const POINTS_LIST = {
   'taxi': {
     icon: `🚕`,
     title: `Taxi to`,
@@ -51,13 +51,14 @@ export const pointsList = {
   },
 };
 
-export const Message = {
-  LOADING_MESSAGE: `Loading route...`,
-  ERROR_MESSAGE: `Something went wrong while loading your route info. Check your connection or try again later.`,
-  SAVING_MESSAGE: `Saving...`,
-  DELETING_MESSAGE: `Deleting...`,
-  SAVE_MESSAGE: `Save`,
-  DELETE_MESSAGE: `Delete`,
-};
+export const FILTER_NAMES = [`everything`, `future`, `past`];
+export const SORT_NAMES = [`price`, `time`, `event`];
 
-export const SERVICE_MESSAGE_CONTAINER = document.querySelector(`.service-message`);
+export const Message = {
+  LOADING: `Loading route...`,
+  ERROR: `Something went wrong while loading your route info. Check your connection or try again later.`,
+  SAVING: `Saving...`,
+  DELETING: `Deleting...`,
+  SAVE: `Save`,
+  DELETE: `Delete`,
+};

@@ -1,25 +1,26 @@
+import moment from 'moment';
+import Chart from 'chart.js';
+
 import {Event} from './event';
 import {EventEdit} from './event-edit';
 import {TripDay} from './trip-day';
 import {Filter} from './filter';
+import {Sort} from './sort';
+import {TotalCost} from './total-cost';
 import {RestService} from './rest-service';
-import {ChartParam} from './chartParam';
+import {ChartParam} from './chart-param';
 
-import {filterDays, changeServiceMessage, getTimeDifference} from './utils';
-import {SERVER_ADDRESS, AUTHORIZATION, SERVICE_MESSAGE_CONTAINER, Message} from './consts';
-
-import moment from 'moment';
-import Chart from 'chart.js';
-
-const filterNames = [`everything`, `future`, `past`];
-const filtersSection = document.querySelector(`.trip-filter`);
-const tripPointsContainer = document.querySelector(`.trip-points`);
+import {filterDays, changeServiceMessage, getTimeDifference, sortDays} from './utils';
+import {SERVER_ADDRESS, AUTHORIZATION, Message, FILTER_NAMES, SORT_NAMES, POINTS_LIST} from './consts';
 
 const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AUTHORIZATION});
 
 // console.log(`getOffers :: `, restService.getPoints()); // 6
 // console.log(`getOffers :: `, restService.getOffers()); // 6
 // console.log(`getDestinations :: `, restService.getDestinations()); // 28
+
+const tripDayContainer = document.querySelector(`.trip-points`);
+const serviceMessageContainer = document.querySelector(`.service-message`);
 
 let daysData = [];
 let destinationsData = [];
@@ -33,55 +34,137 @@ const serverData = [
 
 const handleServerData = Promise.all(serverData);
 
-handleServerData
+const getDataAndRender = () => {
+  handleServerData
   .then((data) => {
     destinationsData = data[0];
     offersData = data[1];
     daysData = data[2];
-    renderTripDay(daysData, tripPointsContainer);
+    renderTrip(daysData, tripDayContainer);
     renderCharts(daysData);
+    countTotalCost(daysData);
   })
   .catch(() => {
-    changeServiceMessage(SERVICE_MESSAGE_CONTAINER, Message.ERROR_MESSAGE);
+    changeServiceMessage(serviceMessageContainer, Message.ERROR);
   });
+};
 
-filterNames.forEach((name) => {
+getDataAndRender();
+
+const countTotalCost = (data) => {
+  const totalCostContainer = document.querySelector(`.trip`);
+  const totalCost = new TotalCost(data);
+  totalCostContainer.appendChild(totalCost.render());
+};
+
+const filterContainer = document.querySelector(`.trip-filter`);
+for (const name of FILTER_NAMES) {
   const filterComponent = new Filter(name);
-  filtersSection.appendChild(filterComponent.render());
+  filterContainer.appendChild(filterComponent.render());
 
   filterComponent.onFilter = (filterName) => {
     const filteredDaysData = filterDays(daysData, filterName);
-    tripPointsContainer.innerHTML = ``;
-    renderTripDay(filteredDaysData, tripPointsContainer);
+    tripDayContainer.innerHTML = ``;
+    renderTrip(filteredDaysData, tripDayContainer);
+  };
+}
+
+const sortContainer = document.querySelector(`.trip-sorting`);
+const offerSort = sortContainer.querySelector(`.trip-sorting__item--offers`);
+for (const name of SORT_NAMES) {
+  const sortComponent = new Sort(name);
+  sortContainer.insertBefore(sortComponent.render(), offerSort);
+
+  sortComponent.onSort = (sortName) => {
+    const sortingDaysData = sortDays(daysData, sortName);
+    tripDayContainer.innerHTML = ``;
+    renderTrip(sortingDaysData, tripDayContainer);
+  };
+}
+
+const newEventButton = document.querySelector(`.trip-controls__new-event`);
+newEventButton.addEventListener(`click`, () => {
+
+  const newEvent = {
+    id: ``,
+    type: `taxi`,
+    destination: `Chamonix`,
+    time: {
+      from: ``,
+      to: ``,
+    },
+    price: ``,
+    offers: [],
+    isFavorite: ``
+  };
+
+  const editComponent = new EventEdit(newEvent, offersData, destinationsData);
+  tripDayContainer.insertBefore(editComponent.render(), tripDayContainer.querySelector(`.trip-day`));
+  editComponent.element.querySelector(`.point__button--delete`).remove();
+  newEventButton.disabled = true;
+
+  editComponent.onSubmit = (newData) => {
+    const choosenDestination = destinationsData.find((descriptionData) => descriptionData.name === newData.destination);
+
+    newEvent.id = newData.id;
+    newEvent.type = newData.type;
+    newEvent.destination = {
+      name: newData.destination,
+      description: choosenDestination.description,
+      pictures: choosenDestination.pictures,
+    };
+    newEvent[`date_from`] = newData.time.from;
+    newEvent[`date_to`] = newData.time.to;
+    newEvent[`base_price`] = newData.price;
+    newEvent.offers = newData.offers;
+    newEvent[`is_favorite`] = newData.isFavorite;
+
+    const saveButton = editComponent.element.querySelector(`.point__button--save`);
+    changeServiceMessage(saveButton, Message.SAVING);
+    saveButton.disabled = true;
+
+    restService.createPoint({point: newEvent})
+      .then((data) => Promise.all([data]))
+      .then(() => {
+        editComponent.element.querySelector(`.point__button--save`).disabled = false;
+        newEventButton.disabled = false;
+
+        tripDayContainer.removeChild(editComponent.element);
+        editComponent.unrender();
+      })
+      .catch(() => {
+        editComponent.element.querySelector(`.point__button--save`).disabled = false;
+        editComponent.shake();
+        changeServiceMessage(saveButton, Message.SAVE);
+      });
   };
 });
 
 const renderEvent = (dist, event) => {
-
   const eventComponent = new Event(event);
-  const editEventComponent = new EventEdit(event, offersData, destinationsData);
+  const editComponent = new EventEdit(event, offersData, destinationsData);
 
   dist.appendChild(eventComponent.render());
 
   eventComponent.onEdit = () => {
-    editEventComponent.render();
-    dist.replaceChild(editEventComponent.element, eventComponent.element);
+    editComponent.render();
+    dist.replaceChild(editComponent.element, eventComponent.element);
     eventComponent.unrender();
   };
 
   const blockFormEdit = () => {
-    editEventComponent.element.querySelector(`.trip-form`).disabled = true;
-    editEventComponent.element.querySelector(`.point__button--save`).disabled = true;
-    editEventComponent.element.querySelector(`.point__button--delete`).disabled = true;
+    editComponent.element.querySelector(`.trip-form`).disabled = true;
+    editComponent.element.querySelector(`.point__button--save`).disabled = true;
+    editComponent.element.querySelector(`.point__button--delete`).disabled = true;
   };
 
   const unblockFormEdit = () => {
-    editEventComponent.element.querySelector(`.trip-form`).disabled = false;
-    editEventComponent.element.querySelector(`.point__button--save`).disabled = false;
-    editEventComponent.element.querySelector(`.point__button--delete`).disabled = false;
+    editComponent.element.querySelector(`.trip-form`).disabled = false;
+    editComponent.element.querySelector(`.point__button--save`).disabled = false;
+    editComponent.element.querySelector(`.point__button--delete`).disabled = false;
   };
 
-  editEventComponent.onSubmit = (newData) => {
+  editComponent.onSubmit = (newData) => {
     event.id = newData.id;
     event.type = newData.type;
     event.icon = newData.icon;
@@ -93,81 +176,89 @@ const renderEvent = (dist, event) => {
     event.offers = newData.offers;
     event.isFavorite = newData.isFavorite;
 
-    const saveButton = editEventComponent.element.querySelector(`.point__button--save`);
+    const saveButton = editComponent.element.querySelector(`.point__button--save`);
 
     blockFormEdit();
-    changeServiceMessage(saveButton, Message.SAVING_MESSAGE);
+    changeServiceMessage(saveButton, Message.SAVING);
 
     restService.updatePoint({id: event.id, data: event.toRAW()})
       .then((newEvent) => {
         unblockFormEdit();
         eventComponent.update(newEvent);
         eventComponent.render();
-        dist.replaceChild(eventComponent.element, editEventComponent.element);
-        editEventComponent.unrender();
+        dist.replaceChild(eventComponent.element, editComponent.element);
+        editComponent.unrender();
         updateCharts();
       })
       .catch(() => {
         unblockFormEdit();
-        editEventComponent.shake();
-        changeServiceMessage(saveButton, Message.SAVE_MESSAGE);
+        editComponent.shake();
+        changeServiceMessage(saveButton, Message.SAVE);
       });
 
   };
 
-  editEventComponent.onDelete = (id) => {
+  editComponent.onDelete = (id) => {
 
-    const deleteButton = editEventComponent.element.querySelector(`.point__button--delete`);
+    const deleteButton = editComponent.element.querySelector(`.point__button--delete`);
 
     blockFormEdit();
-    changeServiceMessage(deleteButton, Message.DELETING_MESSAGE);
+    changeServiceMessage(deleteButton, Message.DELETING);
 
     restService.deletePoint({id})
       .then(() => {
         unblockFormEdit();
-        dist.removeChild(editEventComponent.element);
-        editEventComponent.unrender();
+        dist.removeChild(editComponent.element);
+        editComponent.unrender();
         updateCharts();
       })
       .catch(() => {
         unblockFormEdit();
-        editEventComponent.shake();
-        changeServiceMessage(deleteButton, Message.DELETE_MESSAGE);
+        editComponent.shake();
+        changeServiceMessage(deleteButton, Message.DELETE);
       });
+  };
+
+  editComponent.onKeyDown = (keyCode) => {
+
+    if (keyCode === 27) {
+      eventComponent.render();
+      dist.replaceChild(eventComponent.element, editComponent.element);
+      editComponent.unrender();
+    }
   };
 
 };
 
-const renderTripDay = (points, dist) => {
-  let currentDay = moment(points[0].time.from).format(`D`);
-  let currentMonth = moment(points[0].time.from).format(`MMM`);
-
-  let tripDayComponent = new TripDay(currentDay, currentMonth);
+const renderTrip = (points, dist) => {
   dist.innerHTML = ``;
-  dist.appendChild(tripDayComponent.render());
-  let tripDay = dist.querySelector(`#day-${currentDay}-${currentMonth}`);
+  const renderedDates = [];
 
-  for (let point of points) {
+  let tripDayComponent;
+  let tripDay;
 
-    const day = moment(point.time.from).format(`D`);
-    const month = moment(point.time.from).format(`MMM`);
+  for (const point of points) {
 
-    if (currentMonth !== month || currentDay !== day) {
-      tripDayComponent = new TripDay(day, month);
+    const date = point.time.from;
+    const formattingDate = moment(date).format(`D-MMM-YY`);
+
+    if (!renderedDates.includes(formattingDate)) {
+      renderedDates.push(formattingDate);
+
+      tripDayComponent = new TripDay(date);
       dist.appendChild(tripDayComponent.render());
-      tripDay = dist.querySelector(`#day-${day}-${month}`); // trip-day-${moment(date).format(`DD-MM-YYYY`)}__items
-      currentMonth = month;
-      currentDay = day;
     }
+    tripDay = dist.querySelector(`#day-${formattingDate}`);
 
     renderEvent(tripDay, point);
   }
 };
 
 const mainContainer = document.querySelector(`.main`);
+const viewSwitcher = document.querySelector(`.view-switch`);
 const statisticContainer = document.querySelector(`.statistic`);
 
-document.querySelector(`.view-switch`).addEventListener(`click`, (evt) => {
+viewSwitcher.addEventListener(`click`, (evt) => {
   const choosenSwicth = evt.target.innerHTML.toLowerCase();
   switch (choosenSwicth) {
     case `stats`:
@@ -182,9 +273,9 @@ document.querySelector(`.view-switch`).addEventListener(`click`, (evt) => {
   }
 });
 
-const moneyCtx = document.querySelector(`.statistic__money`).getContext(`2d`);
-const transportCtx = document.querySelector(`.statistic__transport`).getContext(`2d`);
-const timeSpendCtx = document.querySelector(`.statistic__time-spend`).getContext(`2d`);
+const moneyStatiscticContainer = document.querySelector(`.statistic__money`);
+const transportStatiscticContainer = document.querySelector(`.statistic__transport`);
+const timeStatiscticContainer = document.querySelector(`.statistic__time-spend`);
 
 const moneyData = new Map();
 const transportData = new Map();
@@ -200,39 +291,40 @@ const renderCharts = (data) => {
   transportData.clear();
   timeSpendData.clear();
 
-  data.forEach((event) => {
-    const key = `${event.icon} ${event.title.toUpperCase()}`;
+  for (const event of data) {
+    const icon = POINTS_LIST[event.type].icon;
+    const title = POINTS_LIST[event.type].title;
+    const key = `${icon} ${title.toUpperCase()}`;
+
     if (moneyData.has(key)) {
       const currentValue = moneyData.get(key);
       moneyData.set(key, +currentValue + event.price);
     } else {
       moneyData.set(key, event.price);
     }
-  });
 
-  data.forEach((event) => {
-    const key = `${event.icon} ${event.title.toUpperCase()}`;
     if (transportData.has(key)) {
       let currentValue = transportData.get(key);
       transportData.set(key, ++currentValue);
     } else {
       transportData.set(key, 1);
     }
-  });
 
-  data.forEach((event) => {
-    const key = `${event.icon} ${event.title.toUpperCase()}`;
     if (timeSpendData.has(key)) {
       let currentDifference = timeSpendData.get(key);
       timeSpendData.set(key, currentDifference + getTimeDifference(event.time.from, event.time.to));
     } else {
       timeSpendData.set(key, getTimeDifference(event.time.from, event.time.to));
     }
-  });
+  }
 
-  moneyChart = new Chart(moneyCtx, new ChartParam(`MONEY`, moneyData).params);
-  transportChart = new Chart(transportCtx, new ChartParam(`TRANSPORT`, transportData).params);
-  timeChart = new Chart(timeSpendCtx, new ChartParam(`TIME`, timeSpendData).params);
+  const moneyParams = new ChartParam(`MONEY`, moneyData).params;
+  const transportParams = new ChartParam(`TRANSPORT`, transportData).params;
+  const timesParams = new ChartParam(`TIME`, timeSpendData).params;
+
+  moneyChart = new Chart(moneyStatiscticContainer.getContext(`2d`), moneyParams);
+  transportChart = new Chart(transportStatiscticContainer.getContext(`2d`), transportParams);
+  timeChart = new Chart(timeStatiscticContainer.getContext(`2d`), timesParams);
 
 };
 

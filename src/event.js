@@ -1,12 +1,14 @@
-import {EventComponent} from './event-component';
+import {Component} from './component';
 import moment from 'moment';
+import {POINTS_LIST} from './consts';
 
-export class Event extends EventComponent {
+export class Event extends Component {
   constructor(data) {
     super();
     // console.log(data);
-    this._icon = data.icon;
-    this._title = data.title;
+    this._type = data.type;
+    this._icon = POINTS_LIST[this._type].icon || ``;
+    this._title = POINTS_LIST[this._type].title || ``;
     this._destination = data.destination;
     this._time = data.time;
     this._price = data.price;
@@ -14,29 +16,6 @@ export class Event extends EventComponent {
 
     this._onEdit = null;
     this._onEditButtonClick = this._onEditButtonClick.bind(this);
-  }
-
-  _onEditButtonClick() {
-    return typeof this._onEdit === `function` && this._onEdit();
-  }
-
-  set onEdit(value) {
-    this._onEdit = value;
-  }
-
-  _makeOffers() {
-    const offers = [];
-    this._offers.forEach((offer) => {
-      if (offer.accepted) {
-        offers.push(`
-          <li>
-            <button class="trip-point__offer">${offer.title} +&euro;&nbsp;20</button>
-          </li>
-        `);
-      }
-    });
-
-    return offers.join(``);
   }
 
   get template() {
@@ -58,6 +37,34 @@ export class Event extends EventComponent {
     `.trim();
   }
 
+  set onEdit(value) {
+    this._onEdit = value;
+  }
+
+  update(data) {
+    // console.log(data);
+    this._icon = data.icon;
+    this._title = data.title;
+    this._destination = data.destination;
+    this._price = data.price;
+    this._offers = data.offers;
+  }
+
+  _makeOffers() {
+    const offers = [];
+    for (const offer of this._offers) {
+      if (offer.accepted) {
+        offers.push(`
+          <li>
+            <button class="trip-point__offer">${offer.title} +&euro;&nbsp;20</button>
+          </li>
+        `);
+      }
+    }
+
+    return offers.join(``);
+  }
+
   bind() {
     this._element.querySelector(`.trip-point`)
       .addEventListener(`click`, this._onEditButtonClick);
@@ -68,13 +75,8 @@ export class Event extends EventComponent {
       .removeEventListener(`click`, this._onEditButtonClick);
   }
 
-  update(data) {
-    // console.log(data);
-    this._icon = data.icon;
-    this._title = data.title;
-    this._destination = data.destination;
-    this._price = data.price;
-    this._offers = data.offers;
+  _onEditButtonClick() {
+    return typeof this._onEdit === `function` && this._onEdit();
   }
 
 }

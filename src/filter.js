@@ -1,19 +1,12 @@
-import {EventComponent} from './event-component';
+import {Component} from './component';
 
-export class Filter extends EventComponent {
+export class Filter extends Component {
   constructor(name) {
     super();
     this._name = name;
 
     this._onFilter = null;
-  }
-
-  set onFilter(value) {
-    this._onFilter = value;
-  }
-
-  _onFilterClick(evt) {
-    return typeof this._onFilter === `function` && this._onFilter(evt.target.innerHTML);
+    this._onFilterClick = this._onFilterClick.bind(this);
   }
 
   get template() {
@@ -25,9 +18,17 @@ export class Filter extends EventComponent {
     `.trim();
   }
 
+  set onFilter(value) {
+    this._onFilter = value;
+  }
+
   bind() {
     this._element.querySelector(`.trip-filter__item`)
-      .addEventListener(`click`, this._onFilterClick.bind(this));
+      .addEventListener(`click`, this._onFilterClick);
+  }
+
+  _onFilterClick(evt) {
+    return typeof this._onFilter === `function` && this._onFilter(evt.target.innerHTML);
   }
 
 }
