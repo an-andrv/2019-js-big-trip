@@ -51,7 +51,7 @@ export class RestService {
     return this._load({url: `points/${id}`, method: Method.DELETE});
   }
 
-  syncTasks = function({tasks}) {
+  syncTasks({tasks}) {
     return this._load({
       url: `tasks/sync`,
       method: `POST`,
