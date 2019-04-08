@@ -51,6 +51,16 @@ export class RestService {
     return this._load({url: `points/${id}`, method: Method.DELETE});
   }
 
+  syncTasks = function({tasks}) {
+    return this._load({
+      url: `tasks/sync`,
+      method: `POST`,
+      body: JSON.stringify(tasks),
+      headers: new Headers({'Content-Type': `application/json`})
+    })
+      .then(toJSON);
+  }
+
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {
     headers.append(`Authorization`, this._authorization);
 
