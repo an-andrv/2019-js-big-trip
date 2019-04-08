@@ -40,6 +40,7 @@ export class EventEdit extends Component {
   }
 
   update(data) {
+    // console.warn(data);
     this._type = data.type;
     this._icon = data.icon;
     this._title = data.title;
@@ -71,7 +72,7 @@ export class EventEdit extends Component {
           <header class="point__header">
             <label class="point__date">
               choose day
-              <input class="point__input" type="text" placeholder="${moment(new Date()).format(`YYYY-MM-DD`)}" name="day">
+              <input class="point__input" type="text" value="${moment(new Date()).format(`YYYY-MM-DD`)}" name="day">
             </label>
       
             <div class="travel-way">
@@ -126,8 +127,8 @@ export class EventEdit extends Component {
       
             <label class="point__time ">
               choose time                      
-              <input class="point__input point__time-from" type="text" value="${moment(this._time.from).format(`HH:mm`)}" name="timeFrom" placeholder="19:00">                    
-              <input class="point__input point__time-to" type="text" value="${moment(this._time.to).format(`HH:mm`)}" name="timeTo" placeholder="21:00">
+              <input class="point__input point__time-from" type="text" value="${moment(this._time.from).format(`HH:mm`)} || 19:00" name="timeFrom" placeholder="19:00">                    
+              <input class="point__input point__time-to" type="text" value="${moment(this._time.to).format(`HH:mm`)} || 21:00" name="timeTo" placeholder="21:00">
             </label>
       
             <label class="point__price">
@@ -212,8 +213,12 @@ export class EventEdit extends Component {
       }
     }
 
-    entry.time.from = new Date((moment(entry.day).format(`YYYY-MM-DD`) || moment(this._time.from).format(`YYYY-MM-DD`)) + `T` + entry.time.from).getTime();
-    entry.time.to = new Date((moment(entry.day).format(`YYYY-MM-DD`) || moment(this._time.to).format(`YYYY-MM-DD`)) + `T` + entry.time.to).getTime();
+    entry.time.from = entry.day ?
+      new Date(moment(entry.day).format(`YYYY-MM-DD`) + `T` + entry.time.from).getTime() :
+      new Date(moment(this._time.from).format(`YYYY-MM-DD`) + `T` + entry.time.from).getTime();
+    entry.time.to = entry.day ?
+      new Date(moment(entry.day).format(`YYYY-MM-DD`) + `T` + entry.time.to).getTime() :
+      new Date(moment(this._time.to).format(`YYYY-MM-DD`) + `T` + entry.time.to).getTime();
 
     if (!entry.type && !entry.icon && !entry.title) {
       entry.type = this._type;

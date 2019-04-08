@@ -43,9 +43,11 @@ export class Event extends Component {
 
   update(data) {
     // console.log(data);
-    this._icon = data.icon;
-    this._title = data.title;
+    this._type = data.type;
+    this._icon = POINTS_LIST[this._type].icon;
+    this._title = POINTS_LIST[this._type].title;
     this._destination = data.destination;
+    this._time = data.time;
     this._price = data.price;
     this._offers = data.offers;
   }
