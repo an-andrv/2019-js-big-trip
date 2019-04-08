@@ -1,3 +1,6 @@
+import {PointAdapter} from "./point-adapter";
+import {objectToArray} from "./utils";
+
 export class PointProvider {
   constructor({api, store, generateId}) {
     this._api = api;
@@ -17,23 +20,23 @@ export class PointProvider {
       const task = data;
       this._needSync = true;
       this._store.setItem({key: task.id, item: task});
-      return Promise.resolve(ModelTask.parseTask(task));
+      return Promise.resolve(PointAdapter.parsePoint(task));
     }
   }
 
   createTask({task}) {
     if (this._isOnline()) {
       return this._api.createTask({task})
-        .then((task) => {
-          this._store.setItem({key: task.id, item: task.toRAW()});
-          return task;
+        .then((createdTask) => {
+          this._store.setItem({key: createdTask.id, item: createdTask.toRAW()});
+          return createdTask;
         });
     } else {
       task.id = this._generateId();
       this._needSync = true;
 
       this._store.setItem({key: task.id, item: task});
-      return Promise.resolve(ModelTask.parseTask(task));
+      return Promise.resolve(PointAdapter.parsePoint(task));
     }
   }
 
@@ -60,12 +63,12 @@ export class PointProvider {
     } else {
       const rawTasksMap = this._store.getAll();
       const rawTasks = objectToArray(rawTasksMap);
-      const tasks = ModelTask.parseTasks(rawTasks);
+      const tasks = PointAdapter.parsePoints(rawTasks);
 
       return Promise.resolve(tasks);
     }
   }
-  
+
   syncTasks() {
     return this._api.syncTasks({tasks: objectToArray(this._store.getAll())});
   }

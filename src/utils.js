@@ -73,3 +73,7 @@ export const getTimeDifference = (timeFrom, timeTo) => {
 export const convertToHours = (milliseconds) => {
   return Math.floor(milliseconds / (60 * 60 * 1000));
 };
+
+export const objectToArray = (object) => {
+  return Object.keys(object).map((id) => object[id]);
+};
