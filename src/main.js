@@ -9,13 +9,41 @@ import {Sort} from './sort';
 import {TotalCost} from './total-cost';
 import {RestService} from './rest-service';
 import {ChartParam} from './chart-param';
+import {PointStore} from './point-store';
+import {PointProvider} from './point-provider';
 
 import {filterDays, changeServiceMessage, getTimeDifference, sortDays} from './utils';
-import {SERVER_ADDRESS, AUTHORIZATION, Message, FILTER_NAMES, SORT_NAMES, POINTS_LIST} from './consts';
+import {
+  SERVER_ADDRESS, AUTHORIZATION, Message, FILTER_NAMES, SORT_NAMES,
+  POINTS_LIST, POINTS_STORE_KEY, OFFERS_HANDBOOK_STORE_KEY, DESTINATIONS_HANDBOOK_STORE_KEY} from './consts';
 
 const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AUTHORIZATION});
 
-// console.log(`getOffers :: `, restService.getPoints()); // 6
+// localStorage????
+const pointsStore = new PointStore({key: POINTS_STORE_KEY, storage: window.localStorage});
+const offersStore = new PointStore({key: OFFERS_HANDBOOK_STORE_KEY, storage: window.localStorage});
+const destinationsStore = new PointStore({key: DESTINATIONS_HANDBOOK_STORE_KEY, storage: window.localStorage});
+console.warn(pointsStore);
+console.warn(offersStore);
+console.warn(destinationsStore);
+
+const createdStores = Promise.all([
+  pointsStore,
+  offersStore,
+  destinationsStore
+]);
+
+const pointsProvider = new PointProvider({restService, pointsStore, generateId: () => String(Date.now())});
+const offersProvider = new PointProvider({restService, offersStore, generateId: () => String(Date.now())});
+const destinationsProvider = new PointProvider({restService, destinationsStore, generateId: () => String(Date.now())});
+
+window.addEventListener(`offline`, () => document.title = `${document.title}[OFFLINE]`);
+window.addEventListener(`online`, () => {
+  document.title = document.title.split(`[OFFLINE]`)[0];
+  pointsStore.syncPoints();
+});
+
+console.log(`getOffers :: `, restService.getPoints()); // 6
 // console.log(`getOffers :: `, restService.getOffers()); // 6
 // console.log(`getDestinations :: `, restService.getDestinations()); // 28
 
@@ -26,17 +54,17 @@ let daysData = [];
 let destinationsData = [];
 let offersData = [];
 
-const serverData = [
-  restService.getDestinations(),
-  restService.getOffers(),
-  restService.getPoints()
-];
-
-const handleServerData = Promise.all(serverData);
+const createdProviders = Promise.all([
+  destinationsProvider.getDestinations(),
+  offersProvider.getOffers(),
+  pointsProvider.getPoints()
+]);
 
 const getDataAndRender = () => {
-  handleServerData
+  createdStores
+  .then(() => createdProviders)
   .then((data) => {
+    console.warn(data);
     destinationsData = data[0];
     offersData = data[1];
     daysData = data[2];
@@ -123,7 +151,7 @@ newEventButton.addEventListener(`click`, () => {
     changeServiceMessage(saveButton, Message.SAVING);
     saveButton.disabled = true;
 
-    restService.createPoint({point: newEvent})
+    pointsProvider.createPoint({point: newEvent})
       .then((data) => Promise.all([data]))
       .then(() => {
         editComponent.element.querySelector(`.point__button--save`).disabled = false;
@@ -181,7 +209,7 @@ const renderEvent = (dist, event) => {
     blockFormEdit();
     changeServiceMessage(saveButton, Message.SAVING);
 
-    restService.updatePoint({id: event.id, data: event.toRAW()})
+    pointsProvider.updatePoint({id: event.id, data: event.toRAW()})
       .then((newEvent) => {
         eventComponent.update(newEvent);
         eventComponent.render();
@@ -204,7 +232,7 @@ const renderEvent = (dist, event) => {
     blockFormEdit();
     changeServiceMessage(deleteButton, Message.DELETING);
 
-    restService.deletePoint({id})
+    pointsProvider.deletePoint({id})
       .then(() => {
         unblockFormEdit();
         dist.removeChild(editComponent.element);
