@@ -19,33 +19,22 @@ import {
 
 const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AUTHORIZATION});
 
-// localStorage????
-const pointsStore = new PointStore({key: POINTS_STORE_KEY, storage: window.localStorage});
-const offersStore = new PointStore({key: OFFERS_HANDBOOK_STORE_KEY, storage: window.localStorage});
-const destinationsStore = new PointStore({key: DESTINATIONS_HANDBOOK_STORE_KEY, storage: window.localStorage});
-console.warn(pointsStore);
-console.warn(offersStore);
-console.warn(destinationsStore);
+const localStorage = window.localStorage;
 
-const createdStores = Promise.all([
-  pointsStore,
-  offersStore,
-  destinationsStore
-]);
+const pointsStore = new PointStore({key: POINTS_STORE_KEY, storage: localStorage});
+const pointsProvider = new PointProvider({restService, store: pointsStore, generateId: () => String(Date.now())});
+const offersStore = new PointStore({key: OFFERS_HANDBOOK_STORE_KEY, storage: localStorage});
+const offersProvider = new PointProvider({restService, store: offersStore, generateId: () => String(Date.now())});
+const destinationsStore = new PointStore({key: DESTINATIONS_HANDBOOK_STORE_KEY, storage: localStorage});
+const destinationsProvider = new PointProvider({restService, store: destinationsStore, generateId: () => String(Date.now())});
 
-const pointsProvider = new PointProvider({restService, pointsStore, generateId: () => String(Date.now())});
-const offersProvider = new PointProvider({restService, offersStore, generateId: () => String(Date.now())});
-const destinationsProvider = new PointProvider({restService, destinationsStore, generateId: () => String(Date.now())});
-
-window.addEventListener(`offline`, () => document.title = `${document.title}[OFFLINE]`);
+window.addEventListener(`offline`, () => {
+  document.title = `${document.title}[OFFLINE]`;
+});
 window.addEventListener(`online`, () => {
   document.title = document.title.split(`[OFFLINE]`)[0];
-  pointsStore.syncPoints();
+  pointsProvider.syncPoints();
 });
-
-console.log(`getOffers :: `, restService.getPoints()); // 6
-// console.log(`getOffers :: `, restService.getOffers()); // 6
-// console.log(`getDestinations :: `, restService.getDestinations()); // 28
 
 const tripDayContainer = document.querySelector(`.trip-points`);
 const serviceMessageContainer = document.querySelector(`.service-message`);
@@ -61,10 +50,8 @@ const createdProviders = Promise.all([
 ]);
 
 const getDataAndRender = () => {
-  createdStores
-  .then(() => createdProviders)
+  createdProviders
   .then((data) => {
-    console.warn(data);
     destinationsData = data[0];
     offersData = data[1];
     daysData = data[2];

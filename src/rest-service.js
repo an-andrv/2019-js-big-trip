@@ -36,7 +36,6 @@ export class RestService {
   }
 
   updatePoint({id, data}) {
-    // console.warn(id, data);
     return this._load({
       url: `points/${id}`,
       method: Method.PUT,
@@ -51,11 +50,11 @@ export class RestService {
     return this._load({url: `points/${id}`, method: Method.DELETE});
   }
 
-  syncTasks({tasks}) {
+  syncPoints({points}) {
     return this._load({
-      url: `tasks/sync`,
-      method: `POST`,
-      body: JSON.stringify(tasks),
+      url: `points/sync`,
+      method: Method.POST,
+      body: JSON.stringify(points),
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then(toJSON);

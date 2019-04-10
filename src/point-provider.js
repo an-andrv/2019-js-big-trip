@@ -3,10 +3,6 @@ import {objectToArray} from "./utils";
 
 export class PointProvider {
   constructor({restService, store, generateId}) {
-    console.warn(restService);
-    console.warn(store);
-    console.warn(generateId);
-
     this._restService = restService;
     this._store = store;
     this._generateId = generateId;
@@ -61,13 +57,9 @@ export class PointProvider {
     if (this._isOnline()) {
       return this._restService.getPoints()
         .then((points) => {
-          console.warn(points);
-          // points.map((it) => {
-          //   console.warn(this._store);
-          //   console.warn(it);
-
-          //   return this._store.setItem({key: it.id, item: it.toRAW()})
-          // });
+          points.map((it) => {
+            return this._store.setItem({key: it.id, item: it.toRAW()});
+          });
           return points;
         });
     } else {
@@ -82,32 +74,30 @@ export class PointProvider {
   getOffers() {
     if (this._isOnline()) {
       return this._restService.getOffers()
-        .then((points) => {
-          // points.map((it) => this._store.setItem({key: it.id, item: it.toRAW()}));
-          return points;
+        .then((offers) => {
+          offers.map((it, index) => this._store.setItem({key: index, item: it}));
+          return offers;
         });
-    // } else {
-    //   const rawPointsMap = this._store.getAll();
-    //   const rawPoints = objectToArray(rawPointsMap);
-    //   const points = PointAdapter.parsePoints(rawPoints);
+    } else {
+      const rawOffersMap = this._store.getAll();
+      const offers = objectToArray(rawOffersMap);
 
-    //   return Promise.resolve(points);
+      return Promise.resolve(offers);
     }
   }
 
   getDestinations() {
     if (this._isOnline()) {
       return this._restService.getDestinations()
-        .then((points) => {
-          // points.map((it) => this._store.setItem({key: it.id, item: it.toRAW()}));
-          return points;
+        .then((destinations) => {
+          destinations.map((it, index) => this._store.setItem({key: index, item: it}));
+          return destinations;
         });
-    // } else {
-    //   const rawPointsMap = this._store.getAll();
-    //   const rawPoints = objectToArray(rawPointsMap);
-    //   const points = PointAdapter.parsePoints(rawPoints);
+    } else {
+      const rawDestinationsMap = this._store.getAll();
+      const destinations = objectToArray(rawDestinationsMap);
 
-    //   return Promise.resolve(points);
+      return Promise.resolve(destinations);
     }
   }
 
