@@ -9,9 +9,9 @@ export class TotalCost extends Component {
     this._totalCost = this._data.reduce(
         (accumulator, currentValue) => {
           currentValue.offers.forEach((offer) => {
-            accumulator += offer.price;
+            accumulator += +offer.price;
           });
-          return accumulator + currentValue.price;
+          return accumulator + +currentValue.price;
         },
         INITIAL_VALUE
     );

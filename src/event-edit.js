@@ -373,10 +373,14 @@ export class EventEdit extends Component {
       this._destination = choosenDestination.name;
       this._description = choosenDestination.description;
       this._pictures = choosenDestination.pictures;
-
-      this._element.querySelector(`.point__destination-text`).innerHTML = this._description;
-      this._element.querySelector(`.point__destination-images`).innerHTML = this._renderPicturesList(this._pictures);
+    } else {
+      this._destination = evt.target.value;
+      this._description = ``;
+      this._pictures = [];
     }
+
+    this._element.querySelector(`.point__destination-text`).innerHTML = this._description;
+    this._element.querySelector(`.point__destination-images`).innerHTML = this._renderPicturesList(this._pictures);
   }
 
   _onDocumentKeyDown(evt) {
