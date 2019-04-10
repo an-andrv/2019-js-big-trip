@@ -5,7 +5,6 @@ import {POINTS_LIST} from './consts';
 export class Event extends Component {
   constructor(data) {
     super();
-    // console.log(data);
     this._type = data.type;
     this._icon = POINTS_LIST[this._type].icon || ``;
     this._title = POINTS_LIST[this._type].title || ``;
@@ -42,7 +41,6 @@ export class Event extends Component {
   }
 
   update(data) {
-    // console.log(data);
     this._type = data.type;
     this._icon = POINTS_LIST[this._type].icon;
     this._title = POINTS_LIST[this._type].title;

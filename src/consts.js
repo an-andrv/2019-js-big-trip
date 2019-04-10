@@ -7,6 +7,9 @@ export const Method = {
 
 export const SERVER_ADDRESS = `https://es8-demo-srv.appspot.com/big-trip`;
 export const AUTHORIZATION = `Basic er883jdzbdw137277111`;
+export const POINTS_STORE_KEY = `points`;
+export const OFFERS_HANDBOOK_STORE_KEY = `offers`;
+export const DESTINATIONS_HANDBOOK_STORE_KEY = `destinations`;
 
 export const POINTS_LIST = {
   'taxi': {

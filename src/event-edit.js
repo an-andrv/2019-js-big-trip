@@ -40,7 +40,6 @@ export class EventEdit extends Component {
   }
 
   update(data) {
-    // console.warn(data);
     this._type = data.type;
     this._icon = data.icon;
     this._title = data.title;
@@ -280,9 +279,11 @@ export class EventEdit extends Component {
   _renderPicturesList() {
     const descriptions = [];
     for (const url of this._pictures) {
-      descriptions.push(`
-        <img src="${url.src}" alt="${url.description}" class="point__destination-image">
-      `);
+      if (window.navigator.onLine) {
+        descriptions.push(`
+          <img src="${url.src}" alt="${url.description}" class="point__destination-image">
+        `);
+      }
     }
 
     return descriptions.join(``);

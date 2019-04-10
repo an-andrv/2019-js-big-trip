@@ -2,47 +2,47 @@ import {PointAdapter} from "./point-adapter";
 import {objectToArray} from "./utils";
 
 export class PointProvider {
-  constructor({api, store, generateId}) {
-    this._api = api;
+  constructor({restService, store, generateId}) {
+    this._restService = restService;
     this._store = store;
     this._generateId = generateId;
     this._needSync = false;
   }
 
-  updateTask({id, data}) {
+  updatePoint({id, data}) {
     if (this._isOnline()) {
-      return this._api.updateTask({id, data})
-        .then((task) => {
-          this._store.setItem({key: task.id, item: task.toRAW()});
-          return task;
+      return this._restService.updatePoint({id, data})
+        .then((updatedPoint) => {
+          this._store.setItem({key: updatedPoint.id, item: updatedPoint.toRAW()});
+          return updatedPoint;
         });
     } else {
-      const task = data;
+      const point = data;
       this._needSync = true;
-      this._store.setItem({key: task.id, item: task});
-      return Promise.resolve(PointAdapter.parsePoint(task));
+      this._store.setItem({key: point.id, item: point});
+      return Promise.resolve(PointAdapter.parsePoint(point));
     }
   }
 
-  createTask({task}) {
+  createPoint({point}) {
     if (this._isOnline()) {
-      return this._api.createTask({task})
-        .then((createdTask) => {
-          this._store.setItem({key: createdTask.id, item: createdTask.toRAW()});
-          return createdTask;
+      return this._restService.createPoint({point})
+        .then((createdPoint) => {
+          this._store.setItem({key: createdPoint.id, item: createdPoint.toRAW()});
+          return createdPoint;
         });
     } else {
-      task.id = this._generateId();
+      point.id = this._generateId();
       this._needSync = true;
 
-      this._store.setItem({key: task.id, item: task});
-      return Promise.resolve(PointAdapter.parsePoint(task));
+      this._store.setItem({key: point.id, item: point});
+      return Promise.resolve(PointAdapter.parsePoint(point));
     }
   }
 
-  deleteTask({id}) {
+  deletePoint({id}) {
     if (this._isOnline()) {
-      return this._api.deleteTask({id})
+      return this._restService.deletePoint({id})
         .then(() => {
           this._store.removeItem({key: id});
         });
@@ -53,24 +53,56 @@ export class PointProvider {
     }
   }
 
-  getTasks() {
+  getPoints() {
     if (this._isOnline()) {
-      return this._api.getTasks()
-        .then((tasks) => {
-          tasks.map((it) => this._store.setItem({key: it.id, item: it.toRAW()}));
-          return tasks;
+      return this._restService.getPoints()
+        .then((points) => {
+          points.map((it) => {
+            return this._store.setItem({key: it.id, item: it.toRAW()});
+          });
+          return points;
         });
     } else {
-      const rawTasksMap = this._store.getAll();
-      const rawTasks = objectToArray(rawTasksMap);
-      const tasks = PointAdapter.parsePoints(rawTasks);
+      const rawPointsMap = this._store.getAll();
+      const rawPoints = objectToArray(rawPointsMap);
+      const points = PointAdapter.parsePoints(rawPoints);
 
-      return Promise.resolve(tasks);
+      return Promise.resolve(points);
     }
   }
 
-  syncTasks() {
-    return this._api.syncTasks({tasks: objectToArray(this._store.getAll())});
+  getOffers() {
+    if (this._isOnline()) {
+      return this._restService.getOffers()
+        .then((offers) => {
+          offers.map((it, index) => this._store.setItem({key: index, item: it}));
+          return offers;
+        });
+    } else {
+      const rawOffersMap = this._store.getAll();
+      const offers = objectToArray(rawOffersMap);
+
+      return Promise.resolve(offers);
+    }
+  }
+
+  getDestinations() {
+    if (this._isOnline()) {
+      return this._restService.getDestinations()
+        .then((destinations) => {
+          destinations.map((it, index) => this._store.setItem({key: index, item: it}));
+          return destinations;
+        });
+    } else {
+      const rawDestinationsMap = this._store.getAll();
+      const destinations = objectToArray(rawDestinationsMap);
+
+      return Promise.resolve(destinations);
+    }
+  }
+
+  syncPoints() {
+    return this._restService.syncPoints({points: objectToArray(this._store.getAll())});
   }
 
   _isOnline() {
