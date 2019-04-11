@@ -199,6 +199,7 @@ const renderEvent = (dist, event) => {
 
     pointsProvider.updatePoint({id: event.id, data: event.toRAW()})
       .then((newEvent) => {
+        unblockFormEdit();
         eventComponent.update(newEvent);
         eventComponent.render();
         dist.replaceChild(eventComponent.element, editComponent.element);

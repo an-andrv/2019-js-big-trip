@@ -285,7 +285,7 @@ export class EventEdit extends Component {
         `);
       }
     }
-
+    
     return descriptions.join(``);
   }
 
@@ -345,18 +345,20 @@ export class EventEdit extends Component {
 
   _onTravelWayChange(evt) {
     const choosenValue = evt.target.value;
-    if (choosenValue && choosenValue !== `on` && this._offersData.find((offer) => offer.type === choosenValue)) {
-
+    if (choosenValue && choosenValue !== `on`) {
+      console.warn(this._offersData);
       this._type = choosenValue;
       this._icon = POINTS_LIST[choosenValue].icon;
       this._title = POINTS_LIST[choosenValue].title;
 
       let newOffers = this._offersData.find((offer) => offer.type === this._type).offers;
-      this._offers = _.cloneDeep(newOffers);
-      for (const offer of this._offers) {
-        offer.accepted = false;
-        offer.title = offer.name;
-        delete offer.name;
+      if (newOffers) {
+        this._offers = _.cloneDeep(newOffers);
+        for (const offer of this._offers) {
+          offer.accepted = false;
+          offer.title = offer.name;
+          delete offer.name;
+        }
       }
 
       this._element.querySelector(`.travel-way__label`).innerHTML = this._icon;
