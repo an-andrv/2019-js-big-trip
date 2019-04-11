@@ -285,7 +285,7 @@ export class EventEdit extends Component {
         `);
       }
     }
-    
+
     return descriptions.join(``);
   }
 
@@ -346,7 +346,6 @@ export class EventEdit extends Component {
   _onTravelWayChange(evt) {
     const choosenValue = evt.target.value;
     if (choosenValue && choosenValue !== `on`) {
-      console.warn(this._offersData);
       this._type = choosenValue;
       this._icon = POINTS_LIST[choosenValue].icon;
       this._title = POINTS_LIST[choosenValue].title;
