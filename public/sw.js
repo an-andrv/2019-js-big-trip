@@ -7,6 +7,9 @@ self.addEventListener(`install`, (evt) => {
         return cache.addAll([
           `/`,
           `/index.html`,
+          `/img/star.svg`,
+          `/css/main.css`,
+          `/css/normalize.css`,
         ])
       })
   );
