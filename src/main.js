@@ -14,8 +14,10 @@ import {PointProvider} from './point-provider';
 
 import {filterDays, changeServiceMessage, getTimeDifference, sortDays} from './utils';
 import {
-  SERVER_ADDRESS, AUTHORIZATION, Message, FILTER_NAMES, SORT_NAMES,
-  POINTS_LIST, POINTS_STORE_KEY, OFFERS_HANDBOOK_STORE_KEY, DESTINATIONS_HANDBOOK_STORE_KEY} from './consts';
+  SERVER_ADDRESS, AUTHORIZATION, Message,
+  FILTER_NAMES, SORT_NAMES, POINTS_LIST,
+  POINTS_STORE_KEY, OFFERS_HANDBOOK_STORE_KEY, DESTINATIONS_HANDBOOK_STORE_KEY,
+} from './consts';
 
 const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AUTHORIZATION});
 
@@ -125,8 +127,8 @@ newEventButton.addEventListener(`click`, () => {
     newEvent.type = newData.type;
     newEvent.destination = {
       name: newData.destination,
-      description: choosenDestination.description,
-      pictures: choosenDestination.pictures,
+      description: choosenDestination ? choosenDestination.description : ``,
+      pictures: choosenDestination ? choosenDestination.pictures : [],
     };
     newEvent[`date_from`] = newData.time.from;
     newEvent[`date_to`] = newData.time.to;
@@ -190,7 +192,6 @@ const renderEvent = (dist, event) => {
     event.price = newData.price;
     event.offers = newData.offers;
     event.isFavorite = newData.isFavorite;
-
     const saveButton = editComponent.element.querySelector(`.point__button--save`);
 
     blockFormEdit();
@@ -198,6 +199,7 @@ const renderEvent = (dist, event) => {
 
     pointsProvider.updatePoint({id: event.id, data: event.toRAW()})
       .then((newEvent) => {
+        unblockFormEdit();
         eventComponent.update(newEvent);
         eventComponent.render();
         dist.replaceChild(eventComponent.element, editComponent.element);
