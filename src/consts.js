@@ -65,3 +65,9 @@ export const Message = {
   SAVE: `Save`,
   DELETE: `Delete`,
 };
+
+export const chartName = {
+  MONEY: `MONEY`,
+  TRANSPORT: `TRANSPORT`,
+  TIME: `TIME`,
+};
