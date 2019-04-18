@@ -50,6 +50,26 @@ export const sortDays = (days, sortName) => {
   return sortingDays;
 };
 
+export const launchViewSwitcher = () => {
+  const mainContainer = document.querySelector(`.main`);
+  const statisticContainer = document.querySelector(`.statistic`);
+
+  document.addEventListener(`click`, (evt) => {
+    const choosenSwicth = evt.target.innerHTML.toLowerCase();
+    switch (choosenSwicth) {
+      case `stats`:
+        mainContainer.classList.add(`visually-hidden`);
+        statisticContainer.classList.remove(`visually-hidden`);
+        break;
+
+      case `table`:
+        mainContainer.classList.remove(`visually-hidden`);
+        statisticContainer.classList.add(`visually-hidden`);
+        break;
+    }
+  });
+};
+
 export const checkStatus = (response) => {
   if (response.status >= 200 && response.status < 300) {
     return response;
@@ -62,8 +82,12 @@ export const toJSON = (response) => {
   return response.json();
 };
 
-export const changeServiceMessage = (element, message) => {
-  element.innerHTML = message;
+export const changeServiceMessage = (message) => {
+  document.querySelector(`.service-message`).innerHTML = message;
+};
+
+export const changeButtonMessage = (button, message) => {
+  button.innerHTML = message;
 };
 
 export const getTimeDifference = (timeFrom, timeTo) => {

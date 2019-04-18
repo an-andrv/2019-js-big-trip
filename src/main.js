@@ -1,22 +1,21 @@
 import moment from 'moment';
-import Chart from 'chart.js';
 
-import {Event} from './event';
-import {EventEdit} from './event-edit';
+import {Point} from './point';
+import {PointEdit} from './point-edit';
 import {TripDay} from './trip-day';
 import {Filter} from './filter';
 import {Sort} from './sort';
 import {TotalCost} from './total-cost';
 import {RestService} from './rest-service';
-import {ChartParam} from './chart-param';
+import {Charts} from './charts';
 import {PointStore} from './point-store';
 import {PointProvider} from './point-provider';
 
-import {filterDays, changeServiceMessage, getTimeDifference, sortDays} from './utils';
+import {filterDays, changeServiceMessage, sortDays, launchViewSwitcher} from './utils';
 import {
   SERVER_ADDRESS, AUTHORIZATION, Message,
-  FILTER_NAMES, SORT_NAMES, POINTS_LIST,
-  POINTS_STORE_KEY, OFFERS_HANDBOOK_STORE_KEY, DESTINATIONS_HANDBOOK_STORE_KEY,
+  FILTER_NAMES, SORT_NAMES, POINTS_STORE_KEY,
+  OFFERS_HANDBOOK_STORE_KEY, DESTINATIONS_HANDBOOK_STORE_KEY,
 } from './consts';
 
 const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AUTHORIZATION});
@@ -39,11 +38,11 @@ window.addEventListener(`online`, () => {
 });
 
 const tripDayContainer = document.querySelector(`.trip-points`);
-const serviceMessageContainer = document.querySelector(`.service-message`);
 
 let daysData = [];
 let destinationsData = [];
 let offersData = [];
+let charts;
 
 const createdProviders = Promise.all([
   destinationsProvider.getDestinations(),
@@ -58,11 +57,12 @@ const getDataAndRender = () => {
     offersData = data[1];
     daysData = data[2];
     renderTrip(daysData, tripDayContainer);
-    renderCharts(daysData);
+    charts = new Charts(daysData);
+    charts.render();
     countTotalCost(daysData);
   })
   .catch(() => {
-    changeServiceMessage(serviceMessageContainer, Message.ERROR);
+    changeServiceMessage(Message.ERROR);
   });
 };
 
@@ -70,13 +70,13 @@ getDataAndRender();
 
 const countTotalCost = (data) => {
   const totalCostContainer = document.querySelector(`.trip`);
-  const totalCost = new TotalCost(data);
+  const totalCost = new TotalCost(data); // const totalCostContainer = document.querySelector(`.trip`);
   totalCostContainer.appendChild(totalCost.render());
 };
 
 const filterContainer = document.querySelector(`.trip-filter`);
 for (const name of FILTER_NAMES) {
-  const filterComponent = new Filter(name);
+  const filterComponent = new Filter(name); // const filterContainer = document.querySelector(`.trip-filter`);
   filterContainer.appendChild(filterComponent.render());
 
   filterComponent.onFilter = (filterName) => {
@@ -89,7 +89,7 @@ for (const name of FILTER_NAMES) {
 const sortContainer = document.querySelector(`.trip-sorting`);
 const offerSort = sortContainer.querySelector(`.trip-sorting__item--offers`);
 for (const name of SORT_NAMES) {
-  const sortComponent = new Sort(name);
+  const sortComponent = new Sort(name); // const sortContainer = document.querySelector(`.trip-sorting`);
   sortContainer.insertBefore(sortComponent.render(), offerSort);
 
   sortComponent.onSort = (sortName) => {
@@ -99,10 +99,10 @@ for (const name of SORT_NAMES) {
   };
 }
 
-const newEventButton = document.querySelector(`.trip-controls__new-event`);
-newEventButton.addEventListener(`click`, () => {
+const newPointButton = document.querySelector(`.trip-controls__new-event`);
+newPointButton.addEventListener(`click`, () => {
 
-  const newEvent = {
+  const newPoint = {
     id: ``,
     type: `taxi`,
     destination: `Chamonix`,
@@ -115,36 +115,36 @@ newEventButton.addEventListener(`click`, () => {
     isFavorite: ``
   };
 
-  const editComponent = new EventEdit(newEvent, offersData, destinationsData);
-  tripDayContainer.insertBefore(editComponent.render(), tripDayContainer.querySelector(`.trip-day`));
+  const editComponent = new PointEdit(newPoint, offersData, destinationsData); // добавить может метод const newPointButton = document.querySelector(`.trip-controls__new-event`);
+  tripDayContainer.insertBefore(editComponent.render(), tripDayContainer.querySelector(`.trip-day`)); // !!!! const tripDayContainer = document.querySelector(`.trip-points`);
   editComponent.element.querySelector(`.point__button--delete`).remove();
-  newEventButton.disabled = true;
+  newPointButton.disabled = true;
 
   editComponent.onSubmit = (newData) => {
     const choosenDestination = destinationsData.find((descriptionData) => descriptionData.name === newData.destination);
 
-    newEvent.id = newData.id;
-    newEvent.type = newData.type;
-    newEvent.destination = {
+    newPoint.id = newData.id;
+    newPoint.type = newData.type;
+    newPoint.destination = {
       name: newData.destination,
       description: choosenDestination ? choosenDestination.description : ``,
       pictures: choosenDestination ? choosenDestination.pictures : [],
     };
-    newEvent[`date_from`] = newData.time.from;
-    newEvent[`date_to`] = newData.time.to;
-    newEvent[`base_price`] = newData.price;
-    newEvent.offers = newData.offers;
-    newEvent[`is_favorite`] = newData.isFavorite;
+    newPoint[`date_from`] = newData.time.from;
+    newPoint[`date_to`] = newData.time.to;
+    newPoint[`base_price`] = newData.price;
+    newPoint.offers = newData.offers;
+    newPoint[`is_favorite`] = newData.isFavorite;
 
     const saveButton = editComponent.element.querySelector(`.point__button--save`);
-    changeServiceMessage(saveButton, Message.SAVING);
+    editComponent.changeSaveButtonMessage(Message.SAVING);
     saveButton.disabled = true;
 
-    pointsProvider.createPoint({point: newEvent})
+    pointsProvider.createPoint({point: newPoint})
       .then((data) => Promise.all([data]))
       .then(() => {
         editComponent.element.querySelector(`.point__button--save`).disabled = false;
-        newEventButton.disabled = false;
+        newPointButton.disabled = false;
 
         tripDayContainer.removeChild(editComponent.element);
         editComponent.unrender();
@@ -152,21 +152,21 @@ newEventButton.addEventListener(`click`, () => {
       .catch(() => {
         editComponent.element.querySelector(`.point__button--save`).disabled = false;
         editComponent.shake();
-        changeServiceMessage(saveButton, Message.SAVE);
+        editComponent.changeSaveButtonMessage(Message.SAVE);
       });
   };
 });
 
-const renderEvent = (dist, event) => {
-  const eventComponent = new Event(event);
-  const editComponent = new EventEdit(event, offersData, destinationsData);
+const renderPoint = (dist, point) => {
+  const pointComponent = new Point(point);
+  const editComponent = new PointEdit(point, offersData, destinationsData);
 
-  dist.appendChild(eventComponent.render());
+  dist.appendChild(pointComponent.render());
 
-  eventComponent.onEdit = () => {
+  pointComponent.onEdit = () => {
     editComponent.render();
-    dist.replaceChild(editComponent.element, eventComponent.element);
-    eventComponent.unrender();
+    dist.replaceChild(editComponent.element, pointComponent.element);
+    pointComponent.unrender();
   };
 
   const blockFormEdit = () => {
@@ -182,71 +182,68 @@ const renderEvent = (dist, event) => {
   };
 
   editComponent.onSubmit = (newData) => {
-    event.id = newData.id;
-    event.type = newData.type;
-    event.icon = newData.icon;
-    event.title = newData.title;
-    event.destination = newData.destination;
-    event.time.from = newData.time.from;
-    event.time.to = newData.time.to;
-    event.price = newData.price;
-    event.offers = newData.offers;
-    event.isFavorite = newData.isFavorite;
-    const saveButton = editComponent.element.querySelector(`.point__button--save`);
+    point.id = newData.id;
+    point.type = newData.type;
+    point.icon = newData.icon;
+    point.title = newData.title;
+    point.destination = newData.destination;
+    point.time.from = newData.time.from;
+    point.time.to = newData.time.to;
+    point.price = newData.price;
+    point.offers = newData.offers;
+    point.isFavorite = newData.isFavorite;
 
     blockFormEdit();
-    changeServiceMessage(saveButton, Message.SAVING);
+    editComponent.changeSaveButtonMessage(Message.SAVING);
 
-    pointsProvider.updatePoint({id: event.id, data: event.toRAW()})
-      .then((newEvent) => {
+    pointsProvider.updatePoint({id: point.id, data: point.toRAW()})
+      .then((newPoint) => {
         unblockFormEdit();
-        eventComponent.update(newEvent);
-        eventComponent.render();
-        dist.replaceChild(eventComponent.element, editComponent.element);
+        pointComponent.update(newPoint);
+        pointComponent.render();
+        dist.replaceChild(pointComponent.element, editComponent.element);
         editComponent.unrender();
-        updateCharts();
+        charts.updateCharts();
       })
       .catch(() => {
         unblockFormEdit();
         editComponent.shake();
-        changeServiceMessage(saveButton, Message.SAVE);
+        editComponent.changeSaveButtonMessage(Message.SAVE);
       });
 
   };
 
   editComponent.onDelete = (id) => {
 
-    const deleteButton = editComponent.element.querySelector(`.point__button--delete`);
-
     blockFormEdit();
-    changeServiceMessage(deleteButton, Message.DELETING);
+    editComponent.changeDeleteButtonMessage(Message.DELETING);
 
     pointsProvider.deletePoint({id})
       .then(() => {
         unblockFormEdit();
         dist.removeChild(editComponent.element);
         editComponent.unrender();
-        updateCharts();
+        charts.updateCharts();
       })
       .catch(() => {
         unblockFormEdit();
         editComponent.shake();
-        changeServiceMessage(deleteButton, Message.DELETE);
+        editComponent.changeDeleteButtonMessage(Message.DELETE);
       });
   };
 
   editComponent.onKeyDown = (keyCode) => {
 
     if (keyCode === 27) {
-      eventComponent.render();
-      dist.replaceChild(eventComponent.element, editComponent.element);
+      pointComponent.render();
+      dist.replaceChild(pointComponent.element, editComponent.element);
       editComponent.unrender();
     }
   };
 
 };
 
-const renderTrip = (points, dist) => {
+const renderTrip = (points, dist) => { // const tripDayContainer = document.querySelector(`.trip-points`);
   dist.innerHTML = ``;
   const renderedDates = [];
 
@@ -266,87 +263,8 @@ const renderTrip = (points, dist) => {
     }
     tripDay = dist.querySelector(`#day-${formattingDate}`);
 
-    renderEvent(tripDay, point);
+    renderPoint(tripDay, point);
   }
 };
 
-const mainContainer = document.querySelector(`.main`);
-const viewSwitcher = document.querySelector(`.view-switch`);
-const statisticContainer = document.querySelector(`.statistic`);
-
-viewSwitcher.addEventListener(`click`, (evt) => {
-  const choosenSwicth = evt.target.innerHTML.toLowerCase();
-  switch (choosenSwicth) {
-    case `stats`:
-      mainContainer.classList.add(`visually-hidden`);
-      statisticContainer.classList.remove(`visually-hidden`);
-      break;
-
-    case `table`:
-      mainContainer.classList.remove(`visually-hidden`);
-      statisticContainer.classList.add(`visually-hidden`);
-      break;
-  }
-});
-
-const moneyStatiscticContainer = document.querySelector(`.statistic__money`);
-const transportStatiscticContainer = document.querySelector(`.statistic__transport`);
-const timeStatiscticContainer = document.querySelector(`.statistic__time-spend`);
-
-const moneyData = new Map();
-const transportData = new Map();
-const timeSpendData = new Map();
-
-let moneyChart;
-let transportChart;
-let timeChart;
-
-const renderCharts = (data) => {
-
-  moneyData.clear();
-  transportData.clear();
-  timeSpendData.clear();
-
-  for (const event of data) {
-    const icon = POINTS_LIST[event.type].icon;
-    const title = POINTS_LIST[event.type].title;
-    const key = `${icon} ${title.toUpperCase()}`;
-
-    if (moneyData.has(key)) {
-      const currentValue = moneyData.get(key);
-      moneyData.set(key, +currentValue + event.price);
-    } else {
-      moneyData.set(key, event.price);
-    }
-
-    if (transportData.has(key)) {
-      let currentValue = transportData.get(key);
-      transportData.set(key, ++currentValue);
-    } else {
-      transportData.set(key, 1);
-    }
-
-    if (timeSpendData.has(key)) {
-      let currentDifference = timeSpendData.get(key);
-      timeSpendData.set(key, currentDifference + getTimeDifference(event.time.from, event.time.to));
-    } else {
-      timeSpendData.set(key, getTimeDifference(event.time.from, event.time.to));
-    }
-  }
-
-  const moneyParams = new ChartParam(`MONEY`, moneyData).params;
-  const transportParams = new ChartParam(`TRANSPORT`, transportData).params;
-  const timesParams = new ChartParam(`TIME`, timeSpendData).params;
-
-  moneyChart = new Chart(moneyStatiscticContainer.getContext(`2d`), moneyParams);
-  transportChart = new Chart(transportStatiscticContainer.getContext(`2d`), transportParams);
-  timeChart = new Chart(timeStatiscticContainer.getContext(`2d`), timesParams);
-
-};
-
-const updateCharts = () => {
-  moneyChart.destroy();
-  transportChart.destroy();
-  timeChart.destroy();
-  renderCharts(daysData);
-};
+launchViewSwitcher();
