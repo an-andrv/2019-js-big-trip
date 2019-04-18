@@ -2,7 +2,7 @@ import {Component} from './component';
 import moment from 'moment';
 import {POINTS_LIST} from './consts';
 
-export class Event extends Component {
+export class Point extends Component {
   constructor(data) {
     super();
     this._type = data.type;
