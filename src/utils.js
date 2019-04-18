@@ -70,6 +70,12 @@ export const launchViewSwitcher = () => {
   });
 };
 
+export const switchFormEditButtonsDisability = (element, value) => {
+  element.querySelector(`.trip-form`).disabled = value;
+  element.querySelector(`.point__button--save`).disabled = value;
+  element.querySelector(`.point__button--delete`).disabled = value;
+};
+
 export const checkStatus = (response) => {
   if (response.status >= 200 && response.status < 300) {
     return response;

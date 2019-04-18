@@ -10,8 +10,10 @@ import {RestService} from './rest-service';
 import {Charts} from './charts';
 import {PointStore} from './point-store';
 import {PointProvider} from './point-provider';
-
-import {filterDays, changeServiceMessage, sortDays, launchViewSwitcher} from './utils';
+import {
+  filterDays, changeServiceMessage, sortDays, 
+  launchViewSwitcher, switchFormEditButtonsDisability
+} from './utils';
 import {
   SERVER_ADDRESS, AUTHORIZATION, Message,
   FILTER_NAMES, SORT_NAMES, POINTS_STORE_KEY,
@@ -169,18 +171,6 @@ const renderPoint = (dist, point) => {
     pointComponent.unrender();
   };
 
-  const blockFormEdit = () => {
-    editComponent.element.querySelector(`.trip-form`).disabled = true;
-    editComponent.element.querySelector(`.point__button--save`).disabled = true;
-    editComponent.element.querySelector(`.point__button--delete`).disabled = true;
-  };
-
-  const unblockFormEdit = () => {
-    editComponent.element.querySelector(`.trip-form`).disabled = false;
-    editComponent.element.querySelector(`.point__button--save`).disabled = false;
-    editComponent.element.querySelector(`.point__button--delete`).disabled = false;
-  };
-
   editComponent.onSubmit = (newData) => {
     point.id = newData.id;
     point.type = newData.type;
@@ -193,12 +183,12 @@ const renderPoint = (dist, point) => {
     point.offers = newData.offers;
     point.isFavorite = newData.isFavorite;
 
-    blockFormEdit();
+    switchFormEditButtonsDisability(editComponent.element, true);
     editComponent.changeSaveButtonMessage(Message.SAVING);
 
     pointsProvider.updatePoint({id: point.id, data: point.toRAW()})
       .then((newPoint) => {
-        unblockFormEdit();
+        switchFormEditButtonsDisability(editComponent.element, false);
         pointComponent.update(newPoint);
         pointComponent.render();
         dist.replaceChild(pointComponent.element, editComponent.element);
@@ -206,7 +196,7 @@ const renderPoint = (dist, point) => {
         charts.updateCharts();
       })
       .catch(() => {
-        unblockFormEdit();
+        switchFormEditButtonsDisability(editComponent.element, false);
         editComponent.shake();
         editComponent.changeSaveButtonMessage(Message.SAVE);
       });
@@ -215,18 +205,18 @@ const renderPoint = (dist, point) => {
 
   editComponent.onDelete = (id) => {
 
-    blockFormEdit();
+    switchFormEditButtonsDisability(editComponent.element, true);
     editComponent.changeDeleteButtonMessage(Message.DELETING);
 
     pointsProvider.deletePoint({id})
       .then(() => {
-        unblockFormEdit();
+        switchFormEditButtonsDisability(editComponent.element, false);
         dist.removeChild(editComponent.element);
         editComponent.unrender();
         charts.updateCharts();
       })
       .catch(() => {
-        unblockFormEdit();
+        switchFormEditButtonsDisability(editComponent.element, false);
         editComponent.shake();
         editComponent.changeDeleteButtonMessage(Message.DELETE);
       });
