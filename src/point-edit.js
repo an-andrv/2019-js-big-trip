@@ -1,11 +1,12 @@
 import {Component} from './component';
 import {POINTS_LIST} from './consts';
+import {changeButtonMessage} from './utils';
 import flatpickr from 'flatpickr';
 
 import moment from 'moment';
 import _ from 'lodash';
 
-export class EventEdit extends Component {
+export class PointEdit extends Component {
   constructor(data, offersData, destinationsData) {
     super();
     this._id = data.id;
@@ -203,12 +204,12 @@ export class EventEdit extends Component {
       isFavorite: ``
     };
 
-    const eventEditMapper = EventEdit.createMapper(entry);
+    const pointEditMapper = PointEdit.createMapper(entry);
 
     for (const pair of formData.entries()) {
       const [property, value] = pair;
-      if (eventEditMapper[property]) {
-        eventEditMapper[property](value);
+      if (pointEditMapper[property]) {
+        pointEditMapper[property](value);
       }
     }
 
@@ -320,6 +321,14 @@ export class EventEdit extends Component {
     this._element.querySelector(`.point__destination-input`)
       .removeEventListener(`change`, this._onDestinationChange);
     document.removeEventListener(`keydown`, this._onDocumentKeyDown);
+  }
+
+  changeSaveButtonMessage(message) {
+    changeButtonMessage(this._element.querySelector(`.point__button--save`), message);
+  }
+
+  changeDeleteButtonMessage(message) {
+    changeButtonMessage(this._element.querySelector(`.point__button--delete`), message);
   }
 
   _onSubmitButtonClick(evt) {
