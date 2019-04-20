@@ -1,5 +1,6 @@
 import {Component} from './component';
 import moment from 'moment';
+import {createElement} from './utils';
 
 export class TripDay extends Component {
   constructor(date) {
@@ -26,4 +27,10 @@ export class TripDay extends Component {
     `.trim();
   }
 
+  render() {
+    this._element = createElement(this.template);
+
+    const tripDayContainer = document.querySelector(`.trip-points`);
+    tripDayContainer.appendChild(this._element);
+  }
 }

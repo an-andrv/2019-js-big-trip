@@ -1,4 +1,5 @@
 import {Component} from './component';
+import {createElement} from './utils';
 
 export class Filter extends Component {
   constructor(name) {
@@ -25,6 +26,14 @@ export class Filter extends Component {
   bind() {
     this._element.querySelector(`.trip-filter__item`)
       .addEventListener(`click`, this._onFilterClick);
+  }
+
+  render() {
+    this._element = createElement(this.template);
+    this.bind();
+
+    const filterContainer = document.querySelector(`.trip-filter`);
+    filterContainer.appendChild(this._element);
   }
 
   _onFilterClick(evt) {

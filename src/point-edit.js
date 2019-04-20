@@ -32,12 +32,14 @@ export class PointEdit extends Component {
     this._onSubmit = null;
     this._onDelete = null;
     this._onKeyDown = null;
+    this._onNewEventClick = null;
 
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onDeleteButtonClick = this._onDeleteButtonClick.bind(this);
     this._onTravelWayChange = this._onTravelWayChange.bind(this);
     this._onDestinationChange = this._onDestinationChange.bind(this);
     this._onDocumentKeyDown = this._onDocumentKeyDown.bind(this);
+    this._onNewEventButtonClick = this._onNewEventButtonClick.bind(this);
   }
 
   update(data) {
@@ -183,6 +185,10 @@ export class PointEdit extends Component {
     this._onKeyDown = value;
   }
 
+  set onNewEventClick(value) {
+    this._onNewEventClick = value;
+  }
+
   _partialUpdate() {
     this._element.innerHTML = this.template;
   }
@@ -298,7 +304,7 @@ export class PointEdit extends Component {
     this._element.querySelector(`.travel-way`)
       .addEventListener(`change`, this._onTravelWayChange);
     this._element.querySelector(`.point__time`)
-      .addEventListener(`click`, this._onColorChange);
+      .addEventListener(`click`, this._onChangeDate);
     this._element.querySelector(`.point__destination-input`)
       .addEventListener(`change`, this._onDestinationChange);
     document.addEventListener(`keydown`, this._onDocumentKeyDown);
@@ -317,10 +323,29 @@ export class PointEdit extends Component {
     this._element.querySelector(`.travel-way`)
       .removeEventListener(`change`, this._onTravelWayChange);
     this._element.querySelector(`.point__time`)
-      .removeEventListener(`click`, this._onColorChange);
+      .removeEventListener(`click`, this._onChangeDate);
     this._element.querySelector(`.point__destination-input`)
       .removeEventListener(`change`, this._onDestinationChange);
     document.removeEventListener(`keydown`, this._onDocumentKeyDown);
+  }
+
+  addNewEventButtonListener() {
+    document.querySelector(`.trip-controls__new-event`).addEventListener(`click`, () => {
+      const tripDayContainer = document.querySelector(`.trip-points`);
+      tripDayContainer.insertBefore(this.render(), tripDayContainer.querySelector(`.trip-day`));
+      this._element.querySelector(`.point__button--delete`).remove();
+      document.querySelector(`.trip-controls__new-event`).disabled = true;
+    });
+  }
+
+  removeNewEventTemplate() {
+    document.querySelector(`.trip-points`).removeChild(this._element);
+  }
+
+  changeFormEditButtonsDisability(value) {
+    this._element.querySelector(`.trip-form`).disabled = value;
+    this._element.querySelector(`.point__button--save`).disabled = value;
+    this._element.querySelector(`.point__button--delete`).disabled = value;
   }
 
   changeSaveButtonMessage(message) {
@@ -329,6 +354,10 @@ export class PointEdit extends Component {
 
   changeDeleteButtonMessage(message) {
     changeButtonMessage(this._element.querySelector(`.point__button--delete`), message);
+  }
+
+  changeSaveButtonDisability(value) {
+    this._element.querySelector(`.point__button--save`).disabled = value;
   }
 
   _onSubmitButtonClick(evt) {
@@ -395,6 +424,10 @@ export class PointEdit extends Component {
 
   _onDocumentKeyDown(evt) {
     return typeof this._onKeyDown === `function` && this._onKeyDown(evt.keyCode);
+  }
+
+  _onNewEventButtonClick(evt) {
+    return typeof this._onNewEventClick === `function` && this._onNewEventClick(evt.keyCode);
   }
 
   static createMapper(target) {

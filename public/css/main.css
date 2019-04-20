@@ -102,7 +102,7 @@ a:hover {
   text-transform: uppercase;
 }
 
-.trip__total {
+.trip__total-title {
   flex-basis: 170px;
   flex-grow: 0;
   flex-shrink: 0;

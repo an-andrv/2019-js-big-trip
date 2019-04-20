@@ -1,4 +1,5 @@
 import {Component} from "./component";
+import {createElement} from "./utils";
 
 export class TotalCost extends Component {
   constructor(data) {
@@ -19,8 +20,15 @@ export class TotalCost extends Component {
 
   get template() {
     return `
-      <p class="trip__total">Total: <span class="trip__total-cost">&euro;&nbsp;${this._totalCost}</span></p>
+      <p class="trip__total-title">Total: <span class="trip__total-cost">&euro;&nbsp;${this._totalCost}</span></p>
     `.trim();
+  }
+
+  render() {
+    this._element = createElement(this.template);
+    const totalCostContainer = document.querySelector(`.trip__total`);
+    totalCostContainer.innerHTML = ``;
+    totalCostContainer.appendChild(this._element);
   }
 
 }

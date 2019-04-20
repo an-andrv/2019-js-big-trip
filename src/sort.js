@@ -1,4 +1,5 @@
 import {Component} from "./component";
+import {createElement} from "./utils";
 
 export class Sort extends Component {
   constructor(name) {
@@ -25,6 +26,15 @@ export class Sort extends Component {
   bind() {
     this._element.querySelector(`.trip-sorting__item`)
       .addEventListener(`click`, this._onSortClick);
+  }
+
+  render() {
+    this._element = createElement(this.template);
+    this.bind();
+
+    const sortContainer = document.querySelector(`.trip-sorting`);
+    const offerSort = sortContainer.querySelector(`.trip-sorting__item--offers`);
+    sortContainer.insertBefore(this._element, offerSort);
   }
 
   _onSortClick(evt) {

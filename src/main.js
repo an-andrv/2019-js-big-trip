@@ -11,25 +11,15 @@ import {Charts} from './charts';
 import {PointStore} from './point-store';
 import {PointProvider} from './point-provider';
 import {
-  filterDays, changeServiceMessage, sortDays, 
-  launchViewSwitcher, switchFormEditButtonsDisability
+  filterDays, changeServiceMessage, sortDays,
+  launchViewSwitcher, clearTripDayContainer,
 } from './utils';
 import {
   SERVER_ADDRESS, AUTHORIZATION, Message,
   FILTER_NAMES, SORT_NAMES, POINTS_STORE_KEY,
   OFFERS_HANDBOOK_STORE_KEY, DESTINATIONS_HANDBOOK_STORE_KEY,
+  newPoint,
 } from './consts';
-
-const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AUTHORIZATION});
-
-const localStorage = window.localStorage;
-
-const pointsStore = new PointStore({key: POINTS_STORE_KEY, storage: localStorage});
-const pointsProvider = new PointProvider({restService, store: pointsStore, generateId: () => String(Date.now())});
-const offersStore = new PointStore({key: OFFERS_HANDBOOK_STORE_KEY, storage: localStorage});
-const offersProvider = new PointProvider({restService, store: offersStore, generateId: () => String(Date.now())});
-const destinationsStore = new PointStore({key: DESTINATIONS_HANDBOOK_STORE_KEY, storage: localStorage});
-const destinationsProvider = new PointProvider({restService, store: destinationsStore, generateId: () => String(Date.now())});
 
 window.addEventListener(`offline`, () => {
   document.title = `${document.title}[OFFLINE]`;
@@ -39,12 +29,15 @@ window.addEventListener(`online`, () => {
   pointsProvider.syncPoints();
 });
 
-const tripDayContainer = document.querySelector(`.trip-points`);
+const restService = new RestService({endPoint: SERVER_ADDRESS, authorization: AUTHORIZATION});
+const localStorage = window.localStorage;
 
-let daysData = [];
-let destinationsData = [];
-let offersData = [];
-let charts;
+const pointsStore = new PointStore({key: POINTS_STORE_KEY, storage: localStorage});
+const pointsProvider = new PointProvider({restService, store: pointsStore, generateId: () => String(Date.now())});
+const offersStore = new PointStore({key: OFFERS_HANDBOOK_STORE_KEY, storage: localStorage});
+const offersProvider = new PointProvider({restService, store: offersStore, generateId: () => String(Date.now())});
+const destinationsStore = new PointStore({key: DESTINATIONS_HANDBOOK_STORE_KEY, storage: localStorage});
+const destinationsProvider = new PointProvider({restService, store: destinationsStore, generateId: () => String(Date.now())});
 
 const createdProviders = Promise.all([
   destinationsProvider.getDestinations(),
@@ -52,77 +45,62 @@ const createdProviders = Promise.all([
   pointsProvider.getPoints()
 ]);
 
+let daysData = [];
+let destinationsData = [];
+let offersData = [];
+let charts;
+
 const getDataAndRender = () => {
   createdProviders
   .then((data) => {
     destinationsData = data[0];
     offersData = data[1];
     daysData = data[2];
-    renderTrip(daysData, tripDayContainer);
-    charts = new Charts(daysData);
-    charts.render();
-    countTotalCost(daysData);
   })
   .catch(() => {
     changeServiceMessage(Message.ERROR);
+  })
+  .then(() => {
+    activateNewEventButton();
+    renderTrip(daysData);
+    charts = new Charts(daysData);
+    charts.render();
+    countTotalCost(daysData);
   });
 };
 
 getDataAndRender();
 
 const countTotalCost = (data) => {
-  const totalCostContainer = document.querySelector(`.trip`);
-  const totalCost = new TotalCost(data); // const totalCostContainer = document.querySelector(`.trip`);
-  totalCostContainer.appendChild(totalCost.render());
+  const totalCost = new TotalCost(data);
+  totalCost.render();
 };
 
-const filterContainer = document.querySelector(`.trip-filter`);
 for (const name of FILTER_NAMES) {
-  const filterComponent = new Filter(name); // const filterContainer = document.querySelector(`.trip-filter`);
-  filterContainer.appendChild(filterComponent.render());
+  const filterComponent = new Filter(name);
+  filterComponent.render();
 
   filterComponent.onFilter = (filterName) => {
     const filteredDaysData = filterDays(daysData, filterName);
-    tripDayContainer.innerHTML = ``;
-    renderTrip(filteredDaysData, tripDayContainer);
+    renderTrip(filteredDaysData);
   };
 }
 
-const sortContainer = document.querySelector(`.trip-sorting`);
-const offerSort = sortContainer.querySelector(`.trip-sorting__item--offers`);
 for (const name of SORT_NAMES) {
-  const sortComponent = new Sort(name); // const sortContainer = document.querySelector(`.trip-sorting`);
-  sortContainer.insertBefore(sortComponent.render(), offerSort);
+  const sortComponent = new Sort(name);
+  sortComponent.render();
 
   sortComponent.onSort = (sortName) => {
     const sortingDaysData = sortDays(daysData, sortName);
-    tripDayContainer.innerHTML = ``;
-    renderTrip(sortingDaysData, tripDayContainer);
+    renderTrip(sortingDaysData);
   };
 }
 
-const newPointButton = document.querySelector(`.trip-controls__new-event`);
-newPointButton.addEventListener(`click`, () => {
+const activateNewEventButton = () => {
+  const newComponent = new PointEdit(newPoint, offersData, destinationsData);
+  newComponent.addNewEventButtonListener();
 
-  const newPoint = {
-    id: ``,
-    type: `taxi`,
-    destination: `Chamonix`,
-    time: {
-      from: ``,
-      to: ``,
-    },
-    price: ``,
-    offers: [],
-    isFavorite: ``
-  };
-
-  const editComponent = new PointEdit(newPoint, offersData, destinationsData); // добавить может метод const newPointButton = document.querySelector(`.trip-controls__new-event`);
-  tripDayContainer.insertBefore(editComponent.render(), tripDayContainer.querySelector(`.trip-day`)); // !!!! const tripDayContainer = document.querySelector(`.trip-points`);
-  editComponent.element.querySelector(`.point__button--delete`).remove();
-  newPointButton.disabled = true;
-
-  editComponent.onSubmit = (newData) => {
+  newComponent.onSubmit = (newData) => {
     const choosenDestination = destinationsData.find((descriptionData) => descriptionData.name === newData.destination);
 
     newPoint.id = newData.id;
@@ -138,26 +116,25 @@ newPointButton.addEventListener(`click`, () => {
     newPoint.offers = newData.offers;
     newPoint[`is_favorite`] = newData.isFavorite;
 
-    const saveButton = editComponent.element.querySelector(`.point__button--save`);
-    editComponent.changeSaveButtonMessage(Message.SAVING);
-    saveButton.disabled = true;
+    newComponent.changeSaveButtonMessage(Message.SAVING);
+    newComponent.changeSaveButtonDisability(true);
 
     pointsProvider.createPoint({point: newPoint})
       .then((data) => Promise.all([data]))
       .then(() => {
-        editComponent.element.querySelector(`.point__button--save`).disabled = false;
-        newPointButton.disabled = false;
-
-        tripDayContainer.removeChild(editComponent.element);
-        editComponent.unrender();
+        newComponent.changeSaveButtonDisability(false);
+        newComponent.removeNewEventTemplate();
+        newComponent.unrender();
+        countTotalCost(daysData);
+        charts.updateCharts();
       })
       .catch(() => {
-        editComponent.element.querySelector(`.point__button--save`).disabled = false;
-        editComponent.shake();
-        editComponent.changeSaveButtonMessage(Message.SAVE);
+        newComponent.changeSaveButtonDisability(false);
+        newComponent.shake();
+        newComponent.changeSaveButtonMessage(Message.SAVE);
       });
   };
-});
+};
 
 const renderPoint = (dist, point) => {
   const pointComponent = new Point(point);
@@ -169,6 +146,7 @@ const renderPoint = (dist, point) => {
     editComponent.render();
     dist.replaceChild(editComponent.element, pointComponent.element);
     pointComponent.unrender();
+    countTotalCost(daysData);
   };
 
   editComponent.onSubmit = (newData) => {
@@ -183,20 +161,21 @@ const renderPoint = (dist, point) => {
     point.offers = newData.offers;
     point.isFavorite = newData.isFavorite;
 
-    switchFormEditButtonsDisability(editComponent.element, true);
+    editComponent.changeFormEditButtonsDisability(true);
     editComponent.changeSaveButtonMessage(Message.SAVING);
+    countTotalCost(daysData);
 
     pointsProvider.updatePoint({id: point.id, data: point.toRAW()})
-      .then((newPoint) => {
-        switchFormEditButtonsDisability(editComponent.element, false);
-        pointComponent.update(newPoint);
+      .then((updatedPoint) => {
+        editComponent.changeFormEditButtonsDisability(false);
+        pointComponent.update(updatedPoint);
         pointComponent.render();
         dist.replaceChild(pointComponent.element, editComponent.element);
         editComponent.unrender();
         charts.updateCharts();
       })
       .catch(() => {
-        switchFormEditButtonsDisability(editComponent.element, false);
+        editComponent.changeFormEditButtonsDisability(false);
         editComponent.shake();
         editComponent.changeSaveButtonMessage(Message.SAVE);
       });
@@ -205,18 +184,19 @@ const renderPoint = (dist, point) => {
 
   editComponent.onDelete = (id) => {
 
-    switchFormEditButtonsDisability(editComponent.element, true);
+    editComponent.changeFormEditButtonsDisability(true);
     editComponent.changeDeleteButtonMessage(Message.DELETING);
+    countTotalCost(daysData);
 
     pointsProvider.deletePoint({id})
       .then(() => {
-        switchFormEditButtonsDisability(editComponent.element, false);
+        editComponent.changeFormEditButtonsDisability(false);
         dist.removeChild(editComponent.element);
         editComponent.unrender();
         charts.updateCharts();
       })
       .catch(() => {
-        switchFormEditButtonsDisability(editComponent.element, false);
+        editComponent.changeFormEditButtonsDisability(false);
         editComponent.shake();
         editComponent.changeDeleteButtonMessage(Message.DELETE);
       });
@@ -233,10 +213,10 @@ const renderPoint = (dist, point) => {
 
 };
 
-const renderTrip = (points, dist) => { // const tripDayContainer = document.querySelector(`.trip-points`);
-  dist.innerHTML = ``;
-  const renderedDates = [];
+const renderTrip = (points) => {
+  clearTripDayContainer();
 
+  const renderedDates = [];
   let tripDayComponent;
   let tripDay;
 
@@ -249,9 +229,9 @@ const renderTrip = (points, dist) => { // const tripDayContainer = document.quer
       renderedDates.push(formattingDate);
 
       tripDayComponent = new TripDay(date);
-      dist.appendChild(tripDayComponent.render());
+      tripDayComponent.render();
     }
-    tripDay = dist.querySelector(`#day-${formattingDate}`);
+    tripDay = document.querySelector(`#day-${formattingDate}`);
 
     renderPoint(tripDay, point);
   }

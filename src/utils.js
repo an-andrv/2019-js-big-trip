@@ -70,10 +70,9 @@ export const launchViewSwitcher = () => {
   });
 };
 
-export const switchFormEditButtonsDisability = (element, value) => {
-  element.querySelector(`.trip-form`).disabled = value;
-  element.querySelector(`.point__button--save`).disabled = value;
-  element.querySelector(`.point__button--delete`).disabled = value;
+export const clearTripDayContainer = () => {
+  const tripDayContainer = document.querySelector(`.trip-points`);
+  tripDayContainer.innerHTML = ``;
 };
 
 export const checkStatus = (response) => {
@@ -89,7 +88,7 @@ export const toJSON = (response) => {
 };
 
 export const changeServiceMessage = (message) => {
-  document.querySelector(`.service-message`).innerHTML = message;
+  document.querySelector(`.trip-points`).innerHTML = message;
 };
 
 export const changeButtonMessage = (button, message) => {

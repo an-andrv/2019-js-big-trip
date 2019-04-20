@@ -59,7 +59,7 @@ export const SORT_NAMES = [`price`, `time`, `event`];
 
 export const Message = {
   LOADING: `Loading route...`,
-  ERROR: `Something went wrong while loading your route info. Check your connection or try again later.`,
+  ERROR: `<p>Something went wrong while loading your route info. Check your connection or try again later.</p>`,
   SAVING: `Saving...`,
   DELETING: `Deleting...`,
   SAVE: `Save`,
@@ -70,4 +70,17 @@ export const chartName = {
   MONEY: `MONEY`,
   TRANSPORT: `TRANSPORT`,
   TIME: `TIME`,
+};
+
+export const newPoint = {
+  id: ``,
+  type: `taxi`,
+  destination: `Chamonix`,
+  time: {
+    from: ``,
+    to: ``,
+  },
+  price: ``,
+  offers: [],
+  isFavorite: ``
 };
