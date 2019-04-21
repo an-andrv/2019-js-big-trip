@@ -134,6 +134,14 @@ const activateNewEventButton = () => {
         newComponent.changeSaveButtonMessage(Message.SAVE);
       });
   };
+
+  newComponent.onKeyDown = (keyCode) => {
+    if (keyCode === 27) {
+      newComponent.changeSaveButtonDisability(false);
+      newComponent.removeNewEventTemplate();
+      newComponent.unrender();
+    }
+  };
 };
 
 const renderPoint = (dist, point) => {

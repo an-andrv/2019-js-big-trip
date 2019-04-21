@@ -29,7 +29,7 @@ export class Charts {
 
       if (this._moneyData.has(key)) {
         const currentValue = this._moneyData.get(key);
-        this._moneyData.set(key, +currentValue + point.price);
+        this._moneyData.set(key, +currentValue + +point.price);
       } else {
         this._moneyData.set(key, point.price);
       }
